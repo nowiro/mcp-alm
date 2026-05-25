@@ -1,6 +1,6 @@
 # mcp-alm
 
-[![CI](https://github.com/<your-org>/mcp-alm/actions/workflows/ci.yml/badge.svg)](https://github.com/<your-org>/mcp-alm/actions/workflows/ci.yml)
+[![CI](https://github.com/nowiro/mcp-alm/actions/workflows/ci.yml/badge.svg)](https://github.com/nowiro/mcp-alm/actions/workflows/ci.yml)
 [![role](https://img.shields.io/badge/role-MCP%20servers-blue)](#)
 [![ide](https://img.shields.io/badge/IDE-VS%20Code%201.121%2B%20%C2%B7%20IntelliJ%202026.1.2%2B-2da44e)](#konfiguracja-ide)
 [![ai](https://img.shields.io/badge/AI-GitHub%20Copilot-2da44e)](#)
@@ -54,7 +54,7 @@ Pełna polityka żyje w [SECURITY.md](SECURITY.md) oraz [docs/explanation/securi
 ## Quickstart (5 minut)
 
 ```sh
-git clone https://github.com/<your-org>/mcp-alm.git
+git clone https://github.com/nowiro/mcp-alm.git
 cd mcp-alm
 npm install
 npm run bootstrap                        # zasiewa ~/.config/mcp-alm/config.json (0600 na POSIX)

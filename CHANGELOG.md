@@ -7,6 +7,13 @@ projekt stosuje [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **SHA-pinning wszystkich GitHub Actions** — `actions/checkout`, `actions/setup-node`, `actions/upload-artifact`, `amannn/action-semantic-pull-request`, `gitleaks/gitleaks-action`, `ossf/scorecard-action`, `github/codeql-action/upload-sarif` w `ci.yml`, `pr-checks.yml` i `scorecard.yml` zmienione z floating tag (np. `@v4`) na konkretne commit SHA. OpenSSF Scorecard przestanie flagować "Pinned-Dependencies".
+- **`README.md`** + **`CHANGELOG.md`** — `<your-org>` → `nowiro`.
+
+## [1.1.0] — 2026-05-25
+
 ### Added
 
 - **`LICENSE`** (MIT) — wcześniej brak pliku, `package.json#license` było `UNLICENSED`. Zharmonizowano z `CODE_OF_CONDUCT.md` + `CONTRIBUTING.md` (open source posture).
@@ -136,7 +143,6 @@ as-is w 1.0.0**, nie historię zmian.
 - [`docs/explanation/write-guard.md`](docs/explanation/write-guard.md) — szczegóły wszystkich trzech tier'ów.
 - [`docs/adr/`](docs/adr/) — formalne decyzje architektoniczne (ADR-y 0001–0006).
 
-<!-- Compare links — podmień `<your-org>` poniżej na GitHub org/user, gdy repo zostanie opublikowane. -->
-
-[unreleased]: https://github.com/<your-org>/mcp-alm/compare/1.0.0...HEAD
-[1.0.0]: https://github.com/<your-org>/mcp-alm/releases/tag/1.0.0
+[unreleased]: https://github.com/nowiro/mcp-alm/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/nowiro/mcp-alm/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/nowiro/mcp-alm/releases/tag/v1.0.0

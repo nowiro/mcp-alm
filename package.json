@@ -1,6 +1,6 @@
 {
   "name": "mcp-alm",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "MCP servers for ALM tools (Jira, Confluence, Figma, SonarQube, GitLab). Read-first, write-guarded. Works with GitHub Copilot in VS Code >= 1.121 and IntelliJ IDEA >= 2026.1.2.",

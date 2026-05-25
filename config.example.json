@@ -1,0 +1,27 @@
+{
+  "$schema-comment": "Szablon user-profile config dla mcp-alm. NIGDY nie commituj wersji z prawdziwymi tokenami. Skopiuj do ścieżki, którą wypisze `npm run doctor` (default: ~/.config/mcp-alm/config.json na macOS/Linux, %USERPROFILE%\\.config\\mcp-alm\\config.json na Windows). Wypełnij tylko konektory, których faktycznie używasz; resztę pomiń.",
+  "$permissions-comment": "Na macOS / Linux uruchom po skopiowaniu: chmod 600 ~/.config/mcp-alm/config.json",
+
+  "jira": {
+    "baseUrl": "https://your-org.atlassian.net",
+    "email": "you@example.com",
+    "token": "PASTE_YOUR_JIRA_API_TOKEN_HERE"
+  },
+  "confluence": {
+    "baseUrl": "https://your-org.atlassian.net/wiki",
+    "email": "you@example.com",
+    "token": "PASTE_YOUR_CONFLUENCE_API_TOKEN_HERE"
+  },
+  "figma": {
+    "baseUrl": "https://api.figma.com",
+    "token": "PASTE_YOUR_FIGMA_PERSONAL_ACCESS_TOKEN_HERE"
+  },
+  "sonar": {
+    "baseUrl": "https://sonar.your-org.com",
+    "token": "PASTE_YOUR_SONAR_USER_TOKEN_HERE"
+  },
+  "gitlab": {
+    "baseUrl": "https://gitlab.com/api/v4",
+    "token": "PASTE_YOUR_GITLAB_PERSONAL_ACCESS_TOKEN_HERE"
+  }
+}

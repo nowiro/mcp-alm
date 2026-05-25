@@ -1,0 +1,77 @@
+{
+  "name": "mcp-alm",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP servers for ALM tools (Jira, Confluence, Figma, SonarQube, GitLab). Read-first, write-guarded. Works with GitHub Copilot in VS Code >= 1.121 and IntelliJ IDEA >= 2026.1.2.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "bin": {
+    "mcp-jira": "./dist/server-jira.js",
+    "mcp-confluence": "./dist/server-confluence.js",
+    "mcp-figma": "./dist/server-figma.js",
+    "mcp-sonar": "./dist/server-sonar.js",
+    "mcp-gitlab": "./dist/server-gitlab.js"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "bootstrap": "node tools/scripts/bootstrap.mjs",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,json,md,yml,yaml}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:cov": "vitest run --coverage",
+    "start:jira": "node dist/server-jira.js",
+    "start:confluence": "node dist/server-confluence.js",
+    "start:figma": "node dist/server-figma.js",
+    "start:sonar": "node dist/server-sonar.js",
+    "start:gitlab": "node dist/server-gitlab.js",
+    "extract:jira": "node dist/extract-jira.js",
+    "extract:confluence": "node dist/extract-confluence.js",
+    "extract:gitlab": "node dist/extract-gitlab.js",
+    "extract:sonar": "node dist/extract-sonar.js",
+    "doctor": "node tools/scripts/doctor.mjs",
+    "ai:validate": "node tools/scripts/validate-ai-config.mjs",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run ai:validate"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.0.1",
+    "@commitlint/config-conventional": "^21.0.1",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^4.1.7",
+    "@vitest/eslint-plugin": "^1.6.17",
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import-x": "^4.16.2",
+    "eslint-plugin-promise": "^7.3.0",
+    "eslint-plugin-security": "^4.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
+    "prettier": "^3.8.3",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.59.4",
+    "vitest": "^4.1.7"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix --max-warnings=0",
+      "prettier --write"
+    ],
+    "*.{js,mjs,cjs,json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+}

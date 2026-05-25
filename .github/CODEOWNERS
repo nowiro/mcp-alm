@@ -1,0 +1,28 @@
+# CODEOWNERS — mcp-alm
+# Każdy PR wymaga co najmniej jednego review od code ownera.
+# Składnia: pattern  @owner-or-team
+
+# Default — wszystkie pliki
+*                                   @maintainers
+
+# Reguły Copilota — wymagają dodatkowego review
+.github/instructions/               @maintainers @ai-leads
+.github/prompts/                    @maintainers @ai-leads
+.github/copilot-instructions.md     @maintainers @ai-leads
+
+# GitHub Actions — CI/CD security-sensitive
+.github/workflows/                  @maintainers
+
+# Auth + obsługa tokenów — najwyższa wrażliwość
+src/shared/auth.ts                  @maintainers @security-leads
+src/shared/http-client.ts           @maintainers @security-leads
+src/shared/write-guard.ts           @maintainers @security-leads
+src/shared/user-config.ts           @maintainers @security-leads
+
+# Polityka bezpieczeństwa
+SECURITY.md                         @maintainers
+docs/explanation/security-architecture.md  @maintainers @security-leads
+
+# Manifesty zależności + lockfile
+package.json                        @maintainers
+package-lock.json                   @maintainers

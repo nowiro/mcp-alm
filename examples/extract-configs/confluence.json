@@ -1,0 +1,33 @@
+{
+  "$comment": "Szablon configu dla extract-confluence. Skopiuj do `extract.config.confluence.json` (gitignored) i edytuj. Run: `npm run extract:confluence`.",
+
+  "outputDir": "./output/confluence",
+
+  "snapshots": [
+    {
+      "$comment": "Jedna konkretna strona — najprostszy snapshot.",
+      "name": "team-charter",
+      "type": "page",
+      "pageId": "123456789",
+      "render": ["json", "markdown"]
+    },
+    {
+      "$comment": "Strona + descendants (BFS). depth=3 → root + 2 poziomy w dół.",
+      "name": "engineering-handbook",
+      "type": "tree",
+      "rootPageId": "987654321",
+      "depth": 3,
+      "maxPages": 200,
+      "render": ["json", "markdown"]
+    },
+    {
+      "$comment": "Wszystkie strony z określonym labelem; opcjonalnie zawężone do space.",
+      "name": "rfcs",
+      "type": "label",
+      "label": "rfc",
+      "space": "ENG",
+      "maxPages": 500,
+      "render": ["json", "markdown"]
+    }
+  ]
+}

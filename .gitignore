@@ -1,0 +1,46 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.local
+.env.*.local
+.vscode/*.local
+tmp/
+*.log
+
+# OS-specific cruft (cross-platform repo — must ignore for all)
+.DS_Store                    # macOS Finder
+.AppleDouble                 # macOS network shares
+.LSOverride                  # macOS
+._*                          # macOS resource forks
+Thumbs.db                    # Windows Explorer thumbnails
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini                  # Windows Explorer folder config
+$RECYCLE.BIN/                # Windows recycle bin
+
+# User-profile config — tokens MUST NOT be committed.
+# The canonical location is $HOME/.config/mcp-alm/config.json (see SECURITY.md).
+# These patterns also block accidental in-repo copies.
+/config.json
+/.config/
+/secrets/
+*.secret.*
+
+# Local-only IDE files that should not be shared.
+.idea/workspace.xml
+.idea/usage.statistics.xml
+.idea/shelf/
+.idea/tasks.xml
+
+# Generated SBOM artefacts — produced on demand by release tooling (`npm sbom`), not committed.
+sbom-*.json
+
+# Extract pipeline outputs (per-issue / per-page JSON + Markdown snapshoty).
+# Commitujemy tylko szablony pod `examples/extract-configs/` — runtime configi są lokalne.
+output/
+extract.config.jira.json
+extract.config.confluence.json
+extract.config.gitlab.json
+extract.config.sonar.json

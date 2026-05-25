@@ -1,0 +1,63 @@
+{
+  "$comment": "Szablon configu dla extract-sonar. Skopiuj do `extract.config.sonar.json` (gitignored) i edytuj. Run: `npm run extract:sonar`.",
+
+  "outputDir": "./output/sonar",
+
+  "snapshots": [
+    {
+      "$comment": "Quality gate na main — klasyczny compliance snapshot. Powtarzaj co tydzień, diffuj zmiany.",
+      "name": "qg-main",
+      "type": "quality_gate",
+      "projectKey": "my-project",
+      "render": ["json", "markdown"]
+    },
+    {
+      "$comment": "QG na branchu featurea — dla PR-review snapshotów.",
+      "name": "qg-feature-x",
+      "type": "quality_gate",
+      "projectKey": "my-project",
+      "branch": "feature/x",
+      "render": ["json", "markdown"]
+    },
+    {
+      "$comment": "Wszystkie BLOCKER/CRITICAL bugi do triage.",
+      "name": "critical-bugs",
+      "type": "issues",
+      "projectKey": "my-project",
+      "severities": ["CRITICAL", "BLOCKER"],
+      "types": ["BUG"],
+      "maxItems": 1000,
+      "render": ["json", "markdown"]
+    },
+    {
+      "$comment": "Niezreviewowane security hotspoty.",
+      "name": "hotspots-to-review",
+      "type": "hotspots",
+      "projectKey": "my-project",
+      "status": "TO_REVIEW",
+      "maxItems": 500,
+      "render": ["json", "markdown"]
+    },
+    {
+      "$comment": "Core metryki — coverage, duplikaty, rozmiar, bugi/vulnerabilities.",
+      "name": "core-measures",
+      "type": "measures",
+      "projectKey": "my-project",
+      "metrics": [
+        "coverage",
+        "line_coverage",
+        "branch_coverage",
+        "duplicated_lines_density",
+        "ncloc",
+        "bugs",
+        "vulnerabilities",
+        "code_smells",
+        "cognitive_complexity",
+        "security_rating",
+        "reliability_rating",
+        "sqale_rating"
+      ],
+      "render": ["json", "markdown"]
+    }
+  ]
+}

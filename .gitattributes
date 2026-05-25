@@ -1,0 +1,12 @@
+# Force LF line endings for all text files (cross-platform consistency).
+* text=auto eol=lf
+
+# Binary files: never touched by line-ending normalization.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary

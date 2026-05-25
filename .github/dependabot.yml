@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    labels: [dependencies, type:chore]
+    groups:
+      mcp-sdk:
+        patterns: ['@modelcontextprotocol/*']
+      vitest:
+        patterns: ['vitest', '@vitest/*']
+      eslint:
+        patterns: ['eslint*', '@typescript-eslint/*', 'typescript-eslint']
+      zod:
+        patterns: ['zod']
+      commitlint:
+        patterns: ['@commitlint/*']
+      types:
+        patterns: ['@types/*']
+      prettier:
+        patterns: ['prettier']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels: [dependencies, type:chore, ci]

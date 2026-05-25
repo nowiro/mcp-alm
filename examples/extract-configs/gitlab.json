@@ -1,0 +1,39 @@
+{
+  "$comment": "Szablon configu dla extract-gitlab. Skopiuj do `extract.config.gitlab.json` (gitignored) i edytuj. Run: `npm run extract:gitlab`.",
+
+  "outputDir": "./output/gitlab",
+
+  "snapshots": [
+    {
+      "$comment": "Otwarte issues z projektu. projectId może być numeryczny (np. '12345') lub path ('group/subgroup/project').",
+      "name": "open-issues",
+      "type": "issues",
+      "projectId": "group/your-project",
+      "state": "opened",
+      "maxItems": 500,
+      "includeNotes": true,
+      "render": ["json", "markdown"]
+    },
+    {
+      "$comment": "Wszystkie MR-y w stanie merged za ostatnio (sort updated_at desc); includeChanges=true pociąga też listę zmienionych plików per MR.",
+      "name": "merged-mrs",
+      "type": "mrs",
+      "projectId": "group/your-project",
+      "state": "merged",
+      "maxItems": 200,
+      "includeNotes": true,
+      "includeChanges": true,
+      "render": ["json", "markdown"]
+    },
+    {
+      "$comment": "Pipeline'y na konkretnym branchu — z jobami per pipeline.",
+      "name": "main-pipelines",
+      "type": "pipelines",
+      "projectId": "group/your-project",
+      "ref": "main",
+      "maxItems": 100,
+      "includeJobs": true,
+      "render": ["json", "markdown"]
+    }
+  ]
+}

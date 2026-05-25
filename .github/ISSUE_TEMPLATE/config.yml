@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Pytanie o użycie
+    url: https://github.com/<your-org>/mcp-alm/blob/main/SUPPORT.md
+    about: SUPPORT.md ma drogi przez quickstart, troubleshooting, error-codes.
+  - name: Podatność bezpieczeństwa
+    url: https://github.com/<your-org>/mcp-alm/security/advisories/new
+    about: NIE otwieraj publicznego issue — użyj GitHub private advisory.
+  - name: Code of Conduct
+    url: https://github.com/<your-org>/mcp-alm/blob/main/CODE_OF_CONDUCT.md
+    about: Naruszenia zgłaszaj prywatnie do maintainerów.

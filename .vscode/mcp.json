@@ -1,0 +1,49 @@
+{
+  "$schema": "https://aka.ms/vscode-mcp.schema.json",
+  "comment": "Natywna rejestracja MCP dla VS Code (>= 1.121) dla serwerów mcp-alm. Po `npm run build` pięć serwerów jest uruchamianych jako child processes przez Copilot Chat. Tokeny są czytane z user-profile config w ~/.config/mcp-alm/config.json (lub %USERPROFILE%\\.config\\mcp-alm\\config.json na Windows). Patrz docs/getting-started/vscode-setup.md.",
+  "inputs": [
+    {
+      "id": "mcp-write-enabled",
+      "type": "pickString",
+      "description": "Włączyć mutujące narzędzia (create_issue, add_comment, …) dla tego workspace?",
+      "options": ["false", "true"],
+      "default": "false"
+    }
+  ],
+  "servers": {
+    "alm-jira": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/dist/server-jira.js"],
+      "env": {
+        "MCP_WRITE_ENABLED": "${input:mcp-write-enabled}"
+      }
+    },
+    "alm-confluence": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/dist/server-confluence.js"],
+      "env": {
+        "MCP_WRITE_ENABLED": "${input:mcp-write-enabled}"
+      }
+    },
+    "alm-figma": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/dist/server-figma.js"]
+    },
+    "alm-sonar": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/dist/server-sonar.js"]
+    },
+    "alm-gitlab": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/dist/server-gitlab.js"],
+      "env": {
+        "MCP_WRITE_ENABLED": "${input:mcp-write-enabled}"
+      }
+    }
+  }
+}

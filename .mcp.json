@@ -1,0 +1,31 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schema/draft/mcp.json",
+  "comment": "Rejestr serwerów MCP na poziomie repo, używany przy lokalnej pracy nad mcp-alm (dogfooding konektorów). Konfiguracja IDE (VS Code, IntelliJ) w docs/getting-started/{vscode,intellij}-setup.md.",
+  "mcpServers": {
+    "alm-jira": {
+      "command": "node",
+      "args": ["./dist/server-jira.js"],
+      "comment": "Narzędzia odczytu Jira + opt-in zapisy (bramkowane przez MCP_WRITE_ENABLED + MCP_WRITE_ALLOWLIST)."
+    },
+    "alm-confluence": {
+      "command": "node",
+      "args": ["./dist/server-confluence.js"],
+      "comment": "Strony Confluence, spaces, komentarze, załączniki."
+    },
+    "alm-figma": {
+      "command": "node",
+      "args": ["./dist/server-figma.js"],
+      "comment": "Pliki Figma, komponenty, eksportowane tokeny (API read-only)."
+    },
+    "alm-sonar": {
+      "command": "node",
+      "args": ["./dist/server-sonar.js"],
+      "comment": "Quality gates SonarQube / SonarCloud, issues, hotspots, measures."
+    },
+    "alm-gitlab": {
+      "command": "node",
+      "args": ["./dist/server-gitlab.js"],
+      "comment": "GitLab MR-y, issues, pipelines, jobs, artefakty; opt-in zapisy."
+    }
+  }
+}

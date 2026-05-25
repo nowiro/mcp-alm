@@ -1,0 +1,25 @@
+# Build outputs
+dist/
+out-tsc/
+coverage/
+test-results/
+
+# Generated
+*.lock
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Vendored
+node_modules/
+
+# Misc
+*.min.js
+*.min.css
+*.bundle.js
+.cache/
+tmp/
+
+# Auto-generated tool reference (pnpm docs:tools — AC58). Prettier kompresuje
+# tabele które generator wyrównuje, powoduje drift przy każdym regen.
+docs/reference/tools/

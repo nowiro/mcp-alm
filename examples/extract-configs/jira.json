@@ -1,0 +1,36 @@
+{
+  "$comment": "Szablon configu dla extract-jira. Skopiuj do `extract.config.jira.json` (gitignored) i edytuj. Run: `npm run extract:jira`.",
+
+  "outputDir": "./output/jira",
+
+  "snapshots": [
+    {
+      "$comment": "Wszystkie aktywne bugi w projekcie ABC. Zmień JQL pod swój use case.",
+      "name": "active-bugs",
+      "jql": "project = ABC AND status != Done AND issuetype = Bug ORDER BY updated DESC",
+      "maxIssues": 500,
+      "include": {
+        "changelog": true,
+        "comments": true,
+        "worklog": true,
+        "attachments": true,
+        "renderedFields": true
+      },
+      "render": ["json", "markdown"]
+    },
+    {
+      "$comment": "Konkretny epic + jego sub-issues (linki / story klucze podstaw pod jql).",
+      "name": "epic-abc-1234",
+      "jql": "\"Epic Link\" = ABC-1234 OR key = ABC-1234",
+      "maxIssues": 200,
+      "include": {
+        "changelog": true,
+        "comments": true,
+        "worklog": false,
+        "attachments": true,
+        "renderedFields": true
+      },
+      "render": ["json", "markdown"]
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+name: Feature request
+description: Propozycja nowego narzędzia, konektora lub zmiany w istniejącym zachowaniu.
+title: 'feat: '
+labels: ['type:feat', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Cieszymy się z propozycji. Mała prośba — przed wypełnieniem
+        sprawdź czy żądana funkcja nie żyje już w API danego systemu
+        (Jira REST, GitLab v4, …) ale nie jest jeszcze wystawiona przez
+        nasze narzędzie. Często wystarczy nowy `defineTool({...})`.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Typ propozycji
+      options:
+        - Nowe narzędzie w istniejącym konektorze
+        - Nowy konektor (cały serwer)
+        - Zmiana zachowania istniejącego narzędzia
+        - Zmiana w warstwie shared (http-client, write-guard, …)
+        - Zmiana w toolingu / CI / docs
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Co próbujesz osiągnąć, czego obecnie nie można? Konkretny use case > abstrakcyjna prośba.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propozycja
+      description: |
+        Jak to powinno wyglądać? Najlepiej szkic nazwy narzędzia, kształtu
+        inputu (Zod), kształtu outputu. Jeśli nie wiesz — opisz słowami,
+        my pomożemy zaprojektować.
+      placeholder: |
+        Tool: jira.get_sprint
+        Input: { sprintId: string }
+        Output: { id, name, state, startDate, endDate, goal, issues: [...] }
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Rozważone alternatywy
+      description: Co próbowałeś / dlaczego inne podejścia nie wystarczą?
+
+  - type: dropdown
+    id: write-tier
+    attributes:
+      label: Klasa operacji
+      description: |
+        Read = bez efektów ubocznych po stronie upstreamu.
+        Write = mutacja (create/update/transition).
+        Destructive = usuwa lub trwale rekonfiguruje zasób.
+      options:
+        - Read (bez `assertWriteAllowed`)
+        - Write (mutacja, wymaga `MCP_WRITE_ENABLED` + allowlist)
+        - Destructive (wymaga dodatkowo `confirmToken` + resource name)
+    validations:
+      required: true
+
+  - type: textarea
+    id: security
+    attributes:
+      label: Implikacje bezpieczeństwa
+      description: |
+        Jeśli to write/destructive — jakie ryzyko niesie?  Co się stanie
+        przy niepoprawnym wywołaniu? Czy jest sposób na "dry-run"?

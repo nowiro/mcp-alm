@@ -1,0 +1,115 @@
+name: Bug report
+description: Coś nie działa zgodnie z dokumentacją lub reproducible failure.
+title: 'bug: '
+labels: ['type:bug', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dzięki za zgłoszenie. Zanim wypełnisz: uruchom `npm run doctor` —
+        wynik często wskazuje przyczynę (config, proxy, CA, Node version).
+
+        Dla podatności bezpieczeństwa **NIE** używaj tego formularza —
+        patrz [SECURITY.md](../SECURITY.md).
+
+  - type: dropdown
+    id: connector
+    attributes:
+      label: Konektor
+      description: Który serwer MCP jest dotknięty?
+      options:
+        - mcp-jira
+        - mcp-confluence
+        - mcp-figma
+        - mcp-sonar
+        - mcp-gitlab
+        - shared (warstwa wspólna — http-client, auth, write-guard, …)
+        - tooling (CI, husky, scripts)
+        - docs
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Co się wydarzyło
+      description: Opis problemu w 1–3 zdaniach. Jeden problem na issue.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Oczekiwane zachowanie
+      description: Jak narzędzie powinno się zachować zgodnie z dokumentacją.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reprodukcja
+      description: |
+        Minimalne kroki do odtworzenia. Najlepiej z wyjściem `dev-client`:
+        ```
+        node tools/scripts/dev-client.mjs <connector> <tool> '<json-args>'
+        ```
+      placeholder: |
+        1. ...
+        2. ...
+        3. Oczekiwane: X, faktyczne: Y
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logi / wyjście (stderr)
+      description: |
+        Wklej istotny fragment stderr serwera. Logger redaktuje sekrety, ale
+        **zweryfikuj** brak tokenów / URL-i wewnętrznych przed wklejeniem.
+      render: shell
+
+  - type: input
+    id: version
+    attributes:
+      label: Wersja mcp-alm
+      description: 'commit SHA lub `package.json#version`'
+      placeholder: 1.0.0 (commit deadbeef)
+    validations:
+      required: true
+
+  - type: input
+    id: node
+    attributes:
+      label: Node / OS
+      placeholder: 'Node 22.11.0, macOS 14.5'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: host
+    attributes:
+      label: Host MCP
+      options:
+        - VS Code + GitHub Copilot
+        - IntelliJ IDEA + AI Assistant
+        - IntelliJ IDEA + GitHub Copilot
+        - Claude Desktop
+        - Cursor
+        - Własny klient (Agent SDK, custom)
+        - dev-client (tools/scripts/dev-client.mjs)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Wstępna diagnostyka
+      options:
+        - label: Uruchomiłem `npm run doctor` i przeszło
+          required: false
+        - label: Sprawdziłem `docs/how-to/troubleshooting.md`
+          required: false
+        - label: Brak duplikatu w otwartych/zamkniętych issues
+          required: true

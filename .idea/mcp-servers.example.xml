@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Szablon rejestracji serwerów MCP dla IntelliJ IDEA 2026.1.2+.
+
+  JAK UŻYĆ
+    1. Zbuduj mcp-alm:  npm run build
+    2. Otwórz: Settings → Tools → AI Assistant → Model Context Protocol
+       (lub: Settings → Languages & Frameworks → GitHub Copilot → MCP Servers)
+    3. Kliknij "Import from file…" i wskaż ten plik — lub skopiuj bloki
+       <server> niżej do swojej istniejącej konfiguracji.
+    4. Zamień /absolute/path/to/mcp-alm na faktyczną absolutną ścieżkę na
+       Twojej maszynie (IntelliJ nie rozwija ${PROJECT_DIR} w tej
+       konfiguracji — ścieżki muszą być absolutne).
+    5. Apply. Tool picker Copilot / AI Assistant teraz pokazuje pięć
+       serwerów i ich narzędzia.
+
+  TOKENY nie żyją tutaj. Żyją w Twoim user-profile config w
+  ~/.config/mcp-alm/config.json (macOS / Linux) lub
+  %USERPROFILE%\.config\mcp-alm\config.json (Windows). Patrz SECURITY.md.
+
+  WRITE TOOLS są bramkowane. Żeby pozwolić na mutacje z IntelliJ, dodaj
+  wewnątrz odpowiedniego bloku <env>:
+      <entry key="MCP_WRITE_ENABLED" value="true"/>
+      <entry key="MCP_WRITE_ALLOWLIST" value="jira.add_comment,jira.transition_issue"/>
+-->
+<application>
+  <component name="McpServers">
+
+    <server name="alm-jira" type="stdio">
+      <command>node</command>
+      <args>
+        <arg>/absolute/path/to/mcp-alm/dist/server-jira.js</arg>
+      </args>
+      <env>
+        <!-- Opcjonalnie: tokeny przychodzą z ~/.config/mcp-alm/config.json domyślnie. -->
+      </env>
+    </server>
+
+    <server name="alm-confluence" type="stdio">
+      <command>node</command>
+      <args>
+        <arg>/absolute/path/to/mcp-alm/dist/server-confluence.js</arg>
+      </args>
+    </server>
+
+    <server name="alm-figma" type="stdio">
+      <command>node</command>
+      <args>
+        <arg>/absolute/path/to/mcp-alm/dist/server-figma.js</arg>
+      </args>
+    </server>
+
+    <server name="alm-sonar" type="stdio">
+      <command>node</command>
+      <args>
+        <arg>/absolute/path/to/mcp-alm/dist/server-sonar.js</arg>
+      </args>
+    </server>
+
+    <server name="alm-gitlab" type="stdio">
+      <command>node</command>
+      <args>
+        <arg>/absolute/path/to/mcp-alm/dist/server-gitlab.js</arg>
+      </args>
+    </server>
+
+  </component>
+</application>

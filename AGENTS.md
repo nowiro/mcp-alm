@@ -71,6 +71,15 @@ Dostępne templates: `npm run template:list` (jira-issue, confluence-page, gitla
 
 Gdy dodajesz template — dodaj fixture w `tests/fixtures/<name>.json` żeby preview działało. Gdy zmieniasz template — bump `version:` w frontmatter (semver minor = compatible, major = breaking shape).
 
+## Deterministic gates (validate + audit)
+
+| Skrypt                    | Co robi                                                                                                                                                                  |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm run validate:inputs` | static check `defineTool({...})` w każdym `src/server-*.ts`: name z prefixem servera, description, inputSchema (named ref), handle method                                |
+| `npm run token:budget`    | scan Zod limits (`.min`/`.max`/`.default`) w server/extract files, porównanie z baseline w `llm-optimization.instructions.md`, raport `docs/runs/<date>-token-budget.md` |
+
+`validate:inputs` wpięte w `npm run verify` — drift kontraktu blokuje commit. `token:budget` to manualny audit (akcje delegowane do `connector-author` w osobnym PR). Runtime P50/P95 stats — patrz `token-tuner` agent.
+
 ## Pełne reguły scoped
 
 Pliki w [`.github/instructions/`](.github/instructions/) są auto-aplikowane przez Copilot do plików matching ich `applyTo` glob:

@@ -1,4 +1,5 @@
 ---
+name: confluence-architect
 description: Confluence Architect — projektuje IA (space tree, page templates, hierarchy) żeby docs zostały findable
 tools: ['editFiles', 'search', 'runCommands', 'fetch']
 ---

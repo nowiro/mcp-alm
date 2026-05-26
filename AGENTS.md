@@ -33,21 +33,21 @@ Pełen rulebook → [`.github/copilot-instructions.md`](.github/copilot-instruct
 7. **Definition of Done** przed ogłoszeniem sukcesu: `npm run verify` (format + lint + typecheck + test + build + ai:validate).
 8. **Conventional Commits** dla każdego commitu (wymuszane przez husky `commit-msg` + commitlint).
 
-## Chat modes (VS Code Copilot)
+## Custom agents (VS Code Copilot)
 
-Każdy specjalista ma dedykowany **custom chat mode** w [`.github/chatmodes/`](.github/chatmodes/) — wybierasz go z dropdownu chatu w VS Code:
+Każdy specjalista ma dedykowany **custom agent** w [`.github/agents/`](.github/agents/) — wybierasz go z dropdownu chatu w VS Code:
 
-| Mode                                                                         | Kiedy używać                                                            |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| [`orchestrator`](.github/chatmodes/orchestrator.chatmode.md)                 | multi-step zadania, plan-first, koordynacja specjalistów                |
-| [`connector-author`](.github/chatmodes/connector-author.chatmode.md)         | implementacja / refactor konektora (Jira/Confluence/Figma/Sonar/GitLab) |
-| [`epic-strategist`](.github/chatmodes/epic-strategist.chatmode.md)           | Jira epic breakdown na stories per INVEST, sprint cuts                  |
-| [`confluence-architect`](.github/chatmodes/confluence-architect.chatmode.md) | IA dla Confluence space, page templates, hierarchy                      |
-| [`token-tuner`](.github/chatmodes/token-tuner.chatmode.md)                   | P50/P95 audit, budgetTokens recommendations                             |
+| Mode                                                                   | Kiedy używać                                                            |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [`orchestrator`](.github/agents/orchestrator.agent.md)                 | multi-step zadania, plan-first, koordynacja specjalistów                |
+| [`connector-author`](.github/agents/connector-author.agent.md)         | implementacja / refactor konektora (Jira/Confluence/Figma/Sonar/GitLab) |
+| [`epic-strategist`](.github/agents/epic-strategist.agent.md)           | Jira epic breakdown na stories per INVEST, sprint cuts                  |
+| [`confluence-architect`](.github/agents/confluence-architect.agent.md) | IA dla Confluence space, page templates, hierarchy                      |
+| [`token-tuner`](.github/agents/token-tuner.agent.md)                   | P50/P95 audit, budgetTokens recommendations                             |
 
 VS Code musi mieć włączone `chat.modeFilesLocations` w [`.vscode/settings.json`](.vscode/settings.json) (patrz [`copilot-instructions.md`](.github/copilot-instructions.md) §Jak Copilot pobiera reguły).
 
-Inne hosty MCP (Claude Desktop, Cursor, własny SDK) nie czytają chatmodes — czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback. Treść chatmodes intentionally cienka — pełen rulebook w `.github/instructions/`.
+Inne hosty MCP (Claude Desktop, Cursor, własny SDK) nie czytają agents — czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback. Treść agents intentionally cienka — pełen rulebook w `.github/instructions/`.
 
 ## Pełne reguły scoped
 

@@ -5,7 +5,7 @@
  *   - .github/copilot-instructions.md exists
  *   - every file in .github/instructions/ has frontmatter with `applyTo` + `description`
  *   - every file in .github/prompts/ has frontmatter with `mode` + `description`
- *   - every file in .github/chatmodes/ has frontmatter with `description`
+ *   - every file in .github/agents/ has frontmatter with `description`
  *
  * Exits 0 on success, 1 on any failure. Used by `npm run ai:validate` and CI.
  */
@@ -71,17 +71,17 @@ async function main() {
     await checkKeyedFrontmatter(f, ['mode', 'description']);
   }
 
-  // ── 5. .github/chatmodes/*.chatmode.md frontmatter ──
-  const chatmodes = await listMd('.github/chatmodes');
-  for (const f of chatmodes) {
-    if (!f.endsWith('.chatmode.md')) continue;
+  // ── 5. .github/agents/*.agent.md frontmatter ──
+  const agents = await listMd('.github/agents');
+  for (const f of agents) {
+    if (!f.endsWith('.agent.md')) continue;
     await checkKeyedFrontmatter(f, ['description']);
   }
 
   if (errors.length === 0) {
     console.log(
       `✓ mcp-alm Copilot configuration is valid — ` +
-        `${instructions.length} instructions · ${prompts.length} prompts · ${chatmodes.length} chat-modes`,
+        `${instructions.length} instructions · ${prompts.length} prompts · ${agents.length} agents`,
     );
     process.exit(0);
   }

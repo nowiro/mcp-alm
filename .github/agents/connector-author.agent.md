@@ -1,4 +1,5 @@
 ---
+name: connector-author
 description: Connector Author — implementuje i refactor konektorów ALM (Jira/Confluence/Figma/Sonar/GitLab) z pełnym kontraktem
 tools: ['editFiles', 'search', 'runCommands', 'problems']
 ---

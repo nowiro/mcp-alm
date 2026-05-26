@@ -1,4 +1,5 @@
 ---
+name: token-tuner
 description: Token Tuner — audytuje per-tool token usage (P50/P95) i proponuje budget defaults dla mcp-alm
 tools: ['editFiles', 'search', 'runCommands', 'problems']
 ---

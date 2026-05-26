@@ -1,4 +1,5 @@
 ---
+name: epic-strategist
 description: Epic Strategist — rozbija Jira epiki na stories per INVEST, mapuje zależności, proponuje sprint cuts
 tools: ['editFiles', 'search', 'runCommands', 'fetch']
 ---

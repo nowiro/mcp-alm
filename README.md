@@ -1,5 +1,8 @@
 # mcp-alm
 
+[![ci](https://github.com/nowiro/mcp-alm/actions/workflows/ci.yml/badge.svg)](https://github.com/nowiro/mcp-alm/actions/workflows/ci.yml)
+[![codeql](https://github.com/nowiro/mcp-alm/actions/workflows/codeql.yml/badge.svg)](https://github.com/nowiro/mcp-alm/actions/workflows/codeql.yml)
+[![gitleaks](https://github.com/nowiro/mcp-alm/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/nowiro/mcp-alm/actions/workflows/gitleaks.yml)
 [![role](https://img.shields.io/badge/role-MCP%20servers-blue)](#)
 [![ide](https://img.shields.io/badge/IDE-VS%20Code%201.121%2B%20%C2%B7%20IntelliJ%202026.1.2%2B-2da44e)](#konfiguracja-ide)
 [![ai](https://img.shields.io/badge/AI-GitHub%20Copilot-2da44e)](#)

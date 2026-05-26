@@ -142,7 +142,10 @@ W kolejności priorytetu:
    auto-aplikowane do plików matching `applyTo`.
 3. **Prompt files** w [`.github/prompts/*.prompt.md`](prompts/) — wywoływane
    przez `/<promptname>` w Copilot Chat.
-4. **User prompt** — najwyższy.
+4. **Chat modes** w [`.github/chatmodes/*.chatmode.md`](chatmodes/) — wybierane
+   z dropdownu trybu chatu (orchestrator, connector-author, epic-strategist,
+   confluence-architect, token-tuner).
+5. **User prompt** — najwyższy.
 
 VS Code potrzebuje tych ustawień (już w [`.vscode/settings.json`](../.vscode/settings.json)):
 
@@ -150,6 +153,9 @@ VS Code potrzebuje tych ustawień (już w [`.vscode/settings.json`](../.vscode/s
 {
   "github.copilot.chat.codeGeneration.useInstructionFiles": true,
   "chat.promptFiles": true,
+  "chat.promptFilesLocations": { ".github/prompts": true },
+  "chat.instructionsFilesLocations": { ".github/instructions": true },
+  "chat.modeFilesLocations": { ".github/chatmodes": true },
 }
 ```
 

@@ -24,12 +24,12 @@ node dist/extract-jira.js examples/extract-configs/jira.json
 
 ## Dostępne szablony
 
-| Plik             | Skrypt                  | Co ekstraktuje                                                  |
-| ---------------- | ----------------------- | --------------------------------------------------------------- |
-| `jira.json`      | `npm run extract:jira`  | Snapshoty issues per JQL — wraz z changelog, comments, worklog. |
-| `confluence.json`| `npm run extract:confluence` | Strony / drzewa / labels — z full body ADF → Markdown.     |
-| `gitlab.json`    | `npm run extract:gitlab`| Issues / MR-y / pipelines / jobs (z notes opcjonalnie).         |
-| `sonar.json`     | `npm run extract:sonar` | Quality gates / issues / hotspots / measures.                   |
+| Plik              | Skrypt                       | Co ekstraktuje                                                  |
+| ----------------- | ---------------------------- | --------------------------------------------------------------- |
+| `jira.json`       | `npm run extract:jira`       | Snapshoty issues per JQL — wraz z changelog, comments, worklog. |
+| `confluence.json` | `npm run extract:confluence` | Strony / drzewa / labels — z full body ADF → Markdown.          |
+| `gitlab.json`     | `npm run extract:gitlab`     | Issues / MR-y / pipelines / jobs (z notes opcjonalnie).         |
+| `sonar.json`      | `npm run extract:sonar`      | Quality gates / issues / hotspots / measures.                   |
 
 ## Co commitować
 

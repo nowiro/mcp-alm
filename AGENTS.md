@@ -33,6 +33,22 @@ Pełen rulebook → [`.github/copilot-instructions.md`](.github/copilot-instruct
 7. **Definition of Done** przed ogłoszeniem sukcesu: `npm run verify` (format + lint + typecheck + test + build + ai:validate).
 8. **Conventional Commits** dla każdego commitu (wymuszane przez husky `commit-msg` + commitlint).
 
+## Chat modes (VS Code Copilot)
+
+Każdy specjalista ma dedykowany **custom chat mode** w [`.github/chatmodes/`](.github/chatmodes/) — wybierasz go z dropdownu chatu w VS Code:
+
+| Mode                                                                         | Kiedy używać                                                            |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| [`orchestrator`](.github/chatmodes/orchestrator.chatmode.md)                 | multi-step zadania, plan-first, koordynacja specjalistów                |
+| [`connector-author`](.github/chatmodes/connector-author.chatmode.md)         | implementacja / refactor konektora (Jira/Confluence/Figma/Sonar/GitLab) |
+| [`epic-strategist`](.github/chatmodes/epic-strategist.chatmode.md)           | Jira epic breakdown na stories per INVEST, sprint cuts                  |
+| [`confluence-architect`](.github/chatmodes/confluence-architect.chatmode.md) | IA dla Confluence space, page templates, hierarchy                      |
+| [`token-tuner`](.github/chatmodes/token-tuner.chatmode.md)                   | P50/P95 audit, budgetTokens recommendations                             |
+
+VS Code musi mieć włączone `chat.modeFilesLocations` w [`.vscode/settings.json`](.vscode/settings.json) (patrz [`copilot-instructions.md`](.github/copilot-instructions.md) §Jak Copilot pobiera reguły).
+
+Inne hosty MCP (Claude Desktop, Cursor, własny SDK) nie czytają chatmodes — czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback. Treść chatmodes intentionally cienka — pełen rulebook w `.github/instructions/`.
+
 ## Pełne reguły scoped
 
 Pliki w [`.github/instructions/`](.github/instructions/) są auto-aplikowane przez Copilot do plików matching ich `applyTo` glob:
@@ -49,13 +65,13 @@ Pliki w [`.github/instructions/`](.github/instructions/) są auto-aplikowane prz
 
 ## Gdzie idzie nowa praca
 
-| Rodzaj pracy                           | Sugerowany katalog                                          |
-| -------------------------------------- | ----------------------------------------------------------- |
-| Nowe narzędzie w istniejącym serwerze  | `src/server-<tool>.ts` (dodaj kolejny `defineTool({…})`)    |
-| Nowy konektor dla nowego narzędzia ALM | Nowy folder `src/<tool>/` + `src/server-<tool>.ts`          |
-| Cross-cutting helper                   | `src/shared/` (musi mieć obok plik `*.spec.ts`)             |
-| Doc                                    | `docs/<section>/` — Diátaxis layout                         |
-| Deterministyczny pipeline ekstrakcji   | `src/extract-<connector>.ts`                                |
+| Rodzaj pracy                           | Sugerowany katalog                                       |
+| -------------------------------------- | -------------------------------------------------------- |
+| Nowe narzędzie w istniejącym serwerze  | `src/server-<tool>.ts` (dodaj kolejny `defineTool({…})`) |
+| Nowy konektor dla nowego narzędzia ALM | Nowy folder `src/<tool>/` + `src/server-<tool>.ts`       |
+| Cross-cutting helper                   | `src/shared/` (musi mieć obok plik `*.spec.ts`)          |
+| Doc                                    | `docs/<section>/` — Diátaxis layout                      |
+| Deterministyczny pipeline ekstrakcji   | `src/extract-<connector>.ts`                             |
 
 ## Dwie bramki do tej samej warstwy ekstrakcji
 

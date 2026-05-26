@@ -136,6 +136,125 @@ Obie dzielą 100% kodu reshape — gdy poprawisz projekcję pola dla MCP,
 propaguje się do snapshotów też. Szczegóły:
 [`docs/how-to/data-extraction.md`](docs/how-to/data-extraction.md).
 
+## Agenci Copilot — kiedy i jak używać
+
+Repo wprowadza **pięć custom agents** w [`.github/agents/`](.github/agents/), które Copilot wykrywa automatycznie w VS Code (≥ 1.121) jako custom chat modes do wyboru z dropdownu nad polem czatu. Każdy agent ma wąską specjalizację — wybierz pasującego do typu zadania.
+
+| Agent                                                                  | Kiedy używać                                                                                | Przykładowy prompt                                                                                                       |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [`orchestrator`](.github/agents/orchestrator.agent.md)                 | Wieloetapowe zadania, plan-first, koordynacja innych specjalistów                           | "Zaplanuj migrację Jira PAT → OAuth2 we wszystkich connectorach"                                                         |
+| [`connector-author`](.github/agents/connector-author.agent.md)         | Implementacja / refactor konektora (jira, confluence, figma, sonar, gitlab)                 | "Dodaj `jira.get_sprint` z parametrami `boardId`, `state`, zwraca canonical sprint shape"                                |
+| [`epic-strategist`](.github/agents/epic-strategist.agent.md)           | Jira epic breakdown na stories per INVEST, dependency mapping, sprint cuts                  | "Rozbij epic PROJ-100 na stories per INVEST, oszacuj T-shirt sizes, zaproponuj cut na 3 sprinty"                         |
+| [`confluence-architect`](.github/agents/confluence-architect.agent.md) | Information architecture dla Confluence space, page templates, hierarchy plans              | "Audyt space ENG i zaproponuj target tree z lifecycle markers + migration plan z rollback"                               |
+| [`token-tuner`](.github/agents/token-tuner.agent.md)                   | Audyt P50/P95 zużycia tokenów per tool, rekomendacje `budgetTokens` / `fields` / `maxChars` | "Pull session-tracker dla każdego serwera, policz P95, zaproponuj nowe defaulty w osobnym PR (nie w tym samym co audit)" |
+
+**Workflow w VS Code:**
+
+1. Otwórz Copilot Chat (`Ctrl+Alt+I` lub `Cmd+Ctrl+I`).
+2. Z dropdownu trybu chatu (góra okna) wybierz np. `connector-author`.
+3. Wpisz zadanie — Copilot załaduje plik `.github/agents/<name>.agent.md` jako system prompt i odpowie zgodnie z workflow specjalisty.
+4. Pozostałe hosty MCP (Claude Desktop, Cursor, własny SDK) czytają agents jako fallback w `AGENTS.md` + `.github/copilot-instructions.md`.
+
+## Workflow scripts — deterministic scaffolders
+
+Dla najczęściej powtarzanych workflow z `.github/prompts/` repo dostarcza **deterministic scaffolders** w `tools/scripts/workflow-*.mjs`. Skrypty tworzą strukturę (folders, frontmatter, snippety, plan markdown) zanim Copilot zacznie pracować — agent dostaje gotowy szkielet zamiast wymyślać shape. Oszczędność tokenów + reproducible output niezależnie od modelu LLM.
+
+```sh
+# Dodaj jeden tool do istniejącego connectora
+npm run workflow:add-tool -- \
+  --connector=jira \
+  --tool=get_sprint \
+  --description="Fetch sprint metadata and issue summary." \
+  --type=read
+# → docs/runs/<date>-add-tool-jira-get_sprint.md
+#   z gotowym Zod snippet + defineTool block + CHANGELOG entry + README row.
+#   Następnie connector-author agent wkleja snippet do src/server-jira.ts.
+
+# Nowy ALM connector od zera
+npm run workflow:new-connector -- \
+  --name=asana \
+  --base-url=https://app.asana.com/api/1.0 \
+  --auth=pat
+# → docs/specs/asana/spec.md, docs/specs/asana/plan.md (design),
+#   src/server-asana.ts (stub), docs/plans/<date>-new-connector-asana.md.
+#   Następnie analyst → architect → connector-author wypełniają TODO/[?].
+```
+
+## Response templates — LLM-agnostic outputs
+
+Tool handlery renderują payload przez `src/shared/response-template.ts` z markdown+frontmatter templates pod `templates/responses/`. Cel: **identyczna struktura odpowiedzi niezależnie od modelu LLM** który ją czyta (Claude / GPT / Gemini behind Copilot).
+
+```sh
+npm run template:list
+# → jira-issue, confluence-page, gitlab-mr, sonar-issue, error
+
+npm run template:render -- --name=jira-issue --vars=tests/fixtures/jira-issue.json
+# → renderuje template z fixture data, podgląd markdown wyjścia
+```
+
+W tool handler:
+
+```ts
+import { templateResponse } from '../shared/response-template.js';
+
+return templateResponse(
+  'jira-issue',
+  { key: 'PROJ-123', summary: '...', status: '...', comments: [...] },
+  { correlationId, server: 'mcp-jira', tool: 'jira.get_issue' },
+);
+// → ToolResponse<string> z markdown payload + _meta envelope (tokensEstimate, durationMs)
+```
+
+Każdy template ma `version:` w frontmatter — bump przy breaking shape changes (semver minor = compatible, major = breaking).
+
+## Deterministyczne audyty (validate + token-budget)
+
+Dwa skrypty static-only które pilnują kontraktu narzędzi przed mergem:
+
+```sh
+npm run validate:inputs
+# → static check defineTool({...}) w każdym src/server-*.ts:
+#   name z prefixem servera, description literal, inputSchema (named ref), handle method.
+#   Wpięte w npm run verify — drift kontraktu blokuje commit.
+#   Obecny stan: 63/63 tools clean.
+
+npm run token:budget
+# → scan Zod limits (.min/.max/.default) w server/extract files,
+#   porównanie z baseline z llm-optimization.instructions.md,
+#   raport docs/runs/<date>-token-budget.md z recommendations
+#   (review-high-max, add-default).
+#   Manualny audit — akcje delegowane do connector-author w osobnym PR.
+```
+
+## Przykłady narzędzi MCP (jak Copilot z nich korzysta)
+
+Z poziomu Copilot Chat (przy aktywnym `mcp-jira` z `.vscode/mcp.json`):
+
+```text
+> Pobierz Jira PROJ-123 z komentarzami i changelog
+# Copilot → jira.get_issue({ key: 'PROJ-123', include_comments: true, include_changelog: true })
+# Odpowiedź: ToolResponse z canonical issue shape + Markdown description + comments table.
+
+> Szukaj otwartych bugów assigned to me w projektach PROJ, OPS, INFRA
+# Copilot → jira.search_issues({ jql: 'assignee = currentUser() AND status != Done AND project IN (PROJ,OPS,INFRA)', fields: ['summary','priority','status'] })
+
+> Pokaż page Confluence "Onboarding" w space ENG (z attachments)
+# Copilot → confluence.get_page({ space_key: 'ENG', title: 'Onboarding', include_attachments: true })
+
+> Lista MR w gitlab "myorg/api" z labelem "ready-for-review"
+# Copilot → gitlab.list_mrs({ project: 'myorg/api', labels: ['ready-for-review'], state: 'opened' })
+
+> Quality gate dla projektu Sonar "my-service" z porównaniem do main
+# Copilot → sonar.get_quality_gate_diff({ project: 'my-service', target_branch: 'main' })
+
+> Komponenty frame X w Figma file "designsys"
+# Copilot → figma.get_file({ key: '<file-key>', node_ids: ['<frame-id>'] })
+```
+
+Pełna tabela narzędzi z parametrami: `docs/reference/tools.md` (generowana przez `npm run docs:tools`).
+
+**Write tools** są gated przez `MCP_WRITE_ENABLED=true` env i wrappują `assertWriteAllowed(toolName)` — patrz [`docs/how-to/enable-writes.md`](docs/how-to/enable-writes.md).
+
 ## Architektura w jednym akapicie
 
 Każdy `src/server-<tool>.ts` to samodzielny binarny ESM Node 22, mówiący

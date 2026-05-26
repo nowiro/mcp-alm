@@ -19,6 +19,7 @@ import {
   usageHistoryTool,
   type ToolDefinition,
 } from './shared/mcp-server.js';
+import { definePrompt, type PromptDefinition } from './shared/prompt.js';
 import { cursorAdapter } from './shared/pagination.js';
 import { diffGateStatuses, type SonarProjectStatus } from './shared/sonar-gate-diff.js';
 import {
@@ -273,7 +274,40 @@ const tools: ToolDefinition[] = [
   usageHistoryTool(SERVER_NAME),
 ];
 
-// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
-export { tools };
+// ── prompts ────────────────────────────────────────────────────────────────
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools });
+const prompts: PromptDefinition[] = [
+  definePrompt({
+    name: 'sonar.quality-gate-status',
+    description: 'Current quality gate status for a project (pass/fail + per-condition breakdown).',
+    arguments: [{ name: 'projectKey', description: 'Sonar project key', required: true }],
+    buildMessages: (args) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `\`sonar.quality_gate({ project: "${args['projectKey']}" })\`. Pokaż status (OK / ERROR / WARN) + tabelę: condition | actualValue | errorThreshold | status. Highlight czerwone.`,
+        },
+      },
+    ],
+  }),
+  definePrompt({
+    name: 'sonar.new-issues',
+    description: 'Issues opened since the last release (defaults to last 30 days).',
+    arguments: [{ name: 'projectKey', description: 'Sonar project key', required: true }],
+    buildMessages: (args) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `\`sonar.list_issues\` dla project \`${args['projectKey']}\` z \`createdAfter: -30d\`, \`statuses: ["OPEN","REOPENED"]\`. Pogrupuj per severity (BLOCKER/CRITICAL/MAJOR/MINOR), pokaż top 20 BLOCKER+CRITICAL z component + rule + line.`,
+        },
+      },
+    ],
+  }),
+];
+
+// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
+export { tools, prompts };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts });

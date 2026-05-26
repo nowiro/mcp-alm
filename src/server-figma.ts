@@ -8,6 +8,7 @@ import { loadFigmaAuth } from './shared/auth.js';
 import { emitCss, emitScss, emitTs, type Token, type TokenKind } from './shared/figma-tokens.js';
 import { createNamedHttpClient } from './shared/http-client.js';
 import { bootMcpServerIfEnabled, defineTool, usageHistoryTool, type ToolDefinition } from './shared/mcp-server.js';
+import { definePrompt, type PromptDefinition } from './shared/prompt.js';
 
 const SERVER_NAME = 'mcp-figma';
 
@@ -246,10 +247,29 @@ const tools: ToolDefinition[] = [
   }),
 ];
 
-// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
-export { tools };
+// ── prompts ────────────────────────────────────────────────────────────────
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools });
+const prompts: PromptDefinition[] = [
+  definePrompt({
+    name: 'figma.export-tokens',
+    description: 'Export design tokens (colors, typography, spacing) from a Figma file to structured JSON.',
+    arguments: [{ name: 'fileKey', description: 'Figma file key (from URL)', required: true }],
+    buildMessages: (args) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `\`figma.export_tokens({ key: "${args['fileKey']}" })\`. Pogrupuj: colors (semantic + raw), typography (heading/body/caption), spacing (px scale). Output jako JSON gotowy do design-tokens spec.`,
+        },
+      },
+    ],
+  }),
+];
+
+// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
+export { tools, prompts };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts });
 
 // ── helpers ────────────────────────────────────────────────────────────────
 

@@ -35,6 +35,7 @@ import {
   usageHistoryTool,
   type ToolDefinition,
 } from './shared/mcp-server.js';
+import { definePrompt, type PromptDefinition } from './shared/prompt.js';
 import { jiraJqlCursorAdapter } from './shared/pagination.js';
 import { assertWriteAllowed, isWriteEnabled } from './shared/write-guard.js';
 import { adfToMarkdown, type AdfNode } from './shared/adf.js';
@@ -553,10 +554,63 @@ if (isWriteEnabled()) {
   );
 }
 
-// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
-export { tools };
+// ── prompts (MCP `prompts/list` + `prompts/get`) ──────────────────────────
+//
+// Preconfigured slash-commands. Copilot Chat pokazuje je w pickerze, więc
+// caller nie musi pisać JQL od zera dla typowych zapytań (assignment,
+// sprint, epic breakdown).
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools });
+const prompts: PromptDefinition[] = [
+  definePrompt({
+    name: 'jira.recent-issues',
+    description: 'Fetch issues assigned to the current user, updated in the last 7 days. Copilot then drills in.',
+    buildMessages: () => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: 'Użyj `jira.search_issues` z JQL `assignee = currentUser() AND updated >= -7d ORDER BY updated DESC`, fields ["summary","status","priority","updated"], limit 25. Pokaż tabelę: key | summary | status | priority | updated.',
+        },
+      },
+    ],
+  }),
+  definePrompt({
+    name: 'jira.sprint-summary',
+    description: 'Summarize current active sprint: stories with status, assignee, story points.',
+    arguments: [{ name: 'projectKey', description: 'Jira project key (e.g. PROJ)', required: true }],
+    buildMessages: (args) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `Dla projektu ${args['projectKey']}: użyj \`jira.search_issues\` z JQL \`project = ${args['projectKey']} AND sprint in openSprints()\`, fields ["summary","status","assignee","customfield_10016"]. Zgrupuj wyniki per status (To Do, In Progress, Done). Podsumuj velocity (sum story points done).`,
+        },
+      },
+    ],
+  }),
+  definePrompt({
+    name: 'jira.epic-breakdown',
+    description: 'Pełen kontekst epicu: issue + children + linked issues + comments.',
+    arguments: [{ name: 'epicKey', description: 'Epic issue key (e.g. PROJ-100)', required: true }],
+    buildMessages: (args) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `Dla epicu ${args['epicKey']}:
+1. \`jira.get_issue\` z include_comments=true, include_issuelinks=true.
+2. \`jira.search_issues\` z JQL \`parent = ${args['epicKey']}\` (children).
+3. Zsumuj: ile children, ile po statusie, ile blocked. Wyświetl jako tabelę + dependency graph (mermaid jeśli ≤ 15 nodów).`,
+        },
+      },
+    ],
+  }),
+];
+
+// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
+export { tools, prompts };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts });
 
 // ── helpers ────────────────────────────────────────────────────────────────
 

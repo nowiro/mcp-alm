@@ -13,13 +13,19 @@
  */
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import {
+  CallToolRequestSchema,
+  GetPromptRequestSchema,
+  ListPromptsRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
 import { correlationIdFromMeta } from './correlation.js';
 import { toMcpInputSchema } from './json-schema.js';
 import { compactJson } from './llm-optimize.js';
 import { createLogger, type Logger } from './log.js';
+import type { PromptDefinition } from './prompt.js';
 import { buildMeta, wrapResponse, type ToolResponse } from './response-meta.js';
 import { sessionTracker } from './session-tracker.js';
 import { getRepoVersion } from './version.js';
@@ -75,6 +81,14 @@ export function defineTool<I extends z.ZodSchema>(t: {
 export interface StartOptions {
   readonly name: string;
   readonly tools: readonly ToolDefinition[];
+  /**
+   * Preconfigured prompts surfaced via MCP `prompts/list` + `prompts/get`.
+   * Copilot Chat shows them as slash-commands (`/<server>.<prompt>`) — caller
+   * doesn't have to compose JQL / CQL queries from scratch every time.
+   *
+   * Pass `[]` jawnie jeśli serwer nie ma promptów (rare).
+   */
+  readonly prompts: readonly PromptDefinition[];
 }
 
 /**
@@ -122,7 +136,8 @@ export async function startMcpServer(options: StartOptions): Promise<void> {
   const logger = createLogger({ server: options.name, version });
   const byName = new Map(options.tools.map((t) => [t.name, t]));
 
-  const server = new Server({ name: options.name, version }, { capabilities: { tools: {} } });
+  const server = new Server({ name: options.name, version }, { capabilities: { tools: {}, prompts: {} } });
+  const promptsByName = new Map(options.prompts.map((p) => [p.name, p]));
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: options.tools.map((t) => ({
@@ -131,6 +146,34 @@ export async function startMcpServer(options: StartOptions): Promise<void> {
       inputSchema: toMcpInputSchema(t.inputSchema),
     })),
   }));
+
+  server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+    prompts: options.prompts.map((p) => ({
+      name: p.name,
+      description: p.description,
+      ...(p.arguments
+        ? {
+            arguments: p.arguments.map((a) => ({
+              name: a.name,
+              description: a.description,
+              required: a.required ?? false,
+            })),
+          }
+        : {}),
+    })),
+  }));
+
+  server.setRequestHandler(GetPromptRequestSchema, async (req) => {
+    const prompt = promptsByName.get(req.params.name);
+    if (!prompt) {
+      throw new Error(`Unknown prompt: ${req.params.name}`);
+    }
+    const args: Record<string, string> = req.params.arguments ?? {};
+    return {
+      description: prompt.description,
+      messages: prompt.buildMessages(args),
+    };
+  });
 
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const tool = byName.get(req.params.name);

@@ -29,6 +29,7 @@ import {
   usageHistoryTool,
   type ToolDefinition,
 } from './shared/mcp-server.js';
+import { definePrompt, type PromptDefinition } from './shared/prompt.js';
 import { cursorAdapter } from './shared/pagination.js';
 import { assertWriteAllowed, isWriteEnabled } from './shared/write-guard.js';
 
@@ -466,10 +467,62 @@ if (isWriteEnabled()) {
   );
 }
 
-// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
-export { tools };
+// ── prompts ────────────────────────────────────────────────────────────────
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools });
+const prompts: PromptDefinition[] = [
+  definePrompt({
+    name: 'gitlab.my-mrs',
+    description: 'MRs assigned to or created by the current user, opened in last 14 days.',
+    buildMessages: () => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: 'Użyj `gitlab.list_mrs` z `scope: "all"`, `author_username` lub `assignee_username` = current user, `state: "opened"`, `updated_after: -14d`. Pokaż tabelę: iid | title | project | state | mergeStatus | reviewers.',
+        },
+      },
+    ],
+  }),
+  definePrompt({
+    name: 'gitlab.pipeline-status',
+    description: 'Status pipelines for a branch in last 7 days.',
+    arguments: [
+      { name: 'projectPath', description: 'Project full path (e.g. myorg/api)', required: true },
+      { name: 'ref', description: 'Branch or commit ref (e.g. main)', required: true },
+    ],
+    buildMessages: (args) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `Dla \`${args['projectPath']}\` branch \`${args['ref']}\`: \`gitlab.list_pipelines\` z ref + updated_after: -7d. Pokaż tabelę: id | status | duration | created_at + summary success rate.`,
+        },
+      },
+    ],
+  }),
+  definePrompt({
+    name: 'gitlab.failing-job-log',
+    description: 'Get last 200 lines of a failing job log + classify error.',
+    arguments: [
+      { name: 'projectPath', description: 'Project full path', required: true },
+      { name: 'jobId', description: 'Job ID', required: true },
+    ],
+    buildMessages: (args) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `\`gitlab.get_job_log\` dla project \`${args['projectPath']}\`, jobId \`${args['jobId']}\`, tail=200. Skategoryzuj error (compile / test / timeout / dependency) + zaproponuj 1-2 hipotezy fix.`,
+        },
+      },
+    ],
+  }),
+];
+
+// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
+export { tools, prompts };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts });
 
 // ── helpers ────────────────────────────────────────────────────────────────
 

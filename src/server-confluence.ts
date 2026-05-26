@@ -26,6 +26,7 @@ import {
   usageHistoryTool,
   type ToolDefinition,
 } from './shared/mcp-server.js';
+import { definePrompt, type PromptDefinition } from './shared/prompt.js';
 import { cursorAdapter } from './shared/pagination.js';
 import { adfToMarkdown, type AdfNode } from './shared/adf.js';
 import { assertWriteAllowed, isWriteEnabled } from './shared/write-guard.js';
@@ -435,10 +436,57 @@ function markdownToAdf(markdown: string): { readonly type: 'doc'; readonly versi
   return { type: 'doc', version: 1, content };
 }
 
-// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
-export { tools };
+// ── prompts ────────────────────────────────────────────────────────────────
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools });
+const prompts: PromptDefinition[] = [
+  definePrompt({
+    name: 'confluence.recent-pages',
+    description: 'Pages updated in the last 7 days within a space — Copilot pokazuje top 25.',
+    arguments: [{ name: 'spaceKey', description: 'Confluence space key (e.g. ENG)', required: true }],
+    buildMessages: (args) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `Użyj \`confluence.search_pages\` z CQL \`space = "${args['spaceKey']}" AND lastModified > now("-7d") ORDER BY lastModified DESC\`, limit 25. Tabela: title | updated | updatedBy.`,
+        },
+      },
+    ],
+  }),
+  definePrompt({
+    name: 'confluence.onboarding-search',
+    description: 'Find onboarding-related pages (title CQL fuzzy match).',
+    arguments: [{ name: 'spaceKey', description: 'Confluence space key', required: true }],
+    buildMessages: (args) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `\`confluence.search_pages\` z CQL \`space = "${args['spaceKey']}" AND (title ~ "onboarding" OR title ~ "getting started" OR title ~ "intro")\`. Pokaż jako listę linków + 1-liner z body excerpt.`,
+        },
+      },
+    ],
+  }),
+  definePrompt({
+    name: 'confluence.page-with-children',
+    description: 'Get page + recursive children subtree (max depth 3).',
+    arguments: [{ name: 'pageId', description: 'Confluence page ID', required: true }],
+    buildMessages: (args) => [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: `Dla page ${args['pageId']}: \`confluence.get_page\` (z attachments), potem \`confluence.list_children\` rekurencyjnie do depth 3. Sprezentuj jako mermaid tree + body excerpts.`,
+        },
+      },
+    ],
+  }),
+];
+
+// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
+export { tools, prompts };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts });
 
 // ── helpers ────────────────────────────────────────────────────────────────
 

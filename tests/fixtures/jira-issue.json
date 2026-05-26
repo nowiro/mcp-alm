@@ -1,0 +1,27 @@
+{
+  "key": "PROJ-123",
+  "summary": "Implement OAuth2 PKCE flow",
+  "status": "In Progress",
+  "issueType": "Story",
+  "priority": "High",
+  "assignee": "Jane Doe",
+  "reporter": "John Smith",
+  "created": "2026-04-01T09:00:00Z",
+  "updated": "2026-05-20T14:32:11Z",
+  "parent": { "key": "PROJ-100", "summary": "Auth epic" },
+  "labels": "auth, backend",
+  "components": "api, security",
+  "description": "We need to migrate from PAT to OAuth2 PKCE for cloud Jira instances...",
+  "links": [
+    { "type": "blocks", "direction": "outward", "key": "PROJ-145", "summary": "Migrate Confluence connector" },
+    { "type": "is blocked by", "direction": "inward", "key": "PROJ-99", "summary": "OAuth2 app registration" }
+  ],
+  "comments": [
+    { "author": "Jane Doe", "created": "2026-05-15T10:00:00Z", "body": "Started implementation, see PR #42." },
+    {
+      "author": "John Smith",
+      "created": "2026-05-18T11:30:00Z",
+      "body": "Reviewed, looks good — one nit on token storage."
+    }
+  ]
+}

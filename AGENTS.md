@@ -49,6 +49,28 @@ VS Code musi mieć włączone `chat.modeFilesLocations` w [`.vscode/settings.jso
 
 Inne hosty MCP (Claude Desktop, Cursor, własny SDK) nie czytają agents — czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback. Treść agents intentionally cienka — pełen rulebook w `.github/instructions/`.
 
+## Response templates (LLM-agnostic outputs)
+
+Tool handlery renderują payload przez [`src/shared/response-template.ts`](src/shared/response-template.ts) z markdown+frontmatter templates pod [`templates/responses/`](templates/responses/). Cel: **identyczna struktura odpowiedzi niezależnie od modelu LLM** który ją czyta (Claude / GPT / Gemini behind Copilot).
+
+Engine syntax (self-contained, no deps):
+
+- `{{ var }}` lub `{{ var.path }}` — substytucja z dot-notation
+- `{{ var | default:"—" }}` — fallback gdy nullish / pusty string
+- `{{#if var}}...{{/if}}` — warunek (truthy = non-empty)
+- `{{#each list}} {{ this.field }} {{/each}}` — pętla z item scope (nested loops supported)
+
+Workflow:
+
+1. Edytuj `templates/responses/<name>.md` (frontmatter: `id`, `description`, `version`, `vars`).
+2. Preview z fixture: `npm run template:render -- --name=<name> --vars=tests/fixtures/<name>.json`.
+3. W tool handler: `import { templateResponse } from '../shared/response-template.js'` → `return templateResponse('jira-issue', vars, metaInput)`.
+4. Vitest spec pinuje contract: [`src/shared/response-template.spec.ts`](src/shared/response-template.spec.ts) (13 testów).
+
+Dostępne templates: `npm run template:list` (jira-issue, confluence-page, gitlab-mr, sonar-issue, error).
+
+Gdy dodajesz template — dodaj fixture w `tests/fixtures/<name>.json` żeby preview działało. Gdy zmieniasz template — bump `version:` w frontmatter (semver minor = compatible, major = breaking shape).
+
 ## Pełne reguły scoped
 
 Pliki w [`.github/instructions/`](.github/instructions/) są auto-aplikowane przez Copilot do plików matching ich `applyTo` glob:

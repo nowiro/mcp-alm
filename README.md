@@ -161,6 +161,34 @@ Repo wprowadza **pięć custom agents** w [`.github/agents/`](.github/agents/), 
 3. Wpisz zadanie — Copilot załaduje plik `.github/agents/<name>.agent.md` jako system prompt i odpowie zgodnie z workflow specjalisty.
 4. Pozostałe hosty MCP (Claude Desktop, Cursor, własny SDK) czytają agents jako fallback w `AGENTS.md` + `.github/copilot-instructions.md`.
 
+## MCP Prompts — preconfigured slash-commands
+
+Każdy z 5 serwerów eksponuje **MCP Prompts** (`prompts/list` + `prompts/get`) — gotowe slash-commands w Copilot Chat (`/<server>.<prompt>`). Copilot dostaje pełną treść promptu od serwera, więc nie musisz pisać JQL / CQL / pipeline-pattern od zera.
+
+| Prompt                          | Server         | Args                   | Co robi                                                             |
+| ------------------------------- | -------------- | ---------------------- | ------------------------------------------------------------------- |
+| `jira.recent-issues`            | mcp-jira       | —                      | Issues assigned to me, updated w ostatnich 7 dniach (top 25).       |
+| `jira.sprint-summary`           | mcp-jira       | `projectKey`           | Active sprint — stories per status + velocity sumarycznie.          |
+| `jira.epic-breakdown`           | mcp-jira       | `epicKey`              | Epic + children + linked, dependency graph mermaid.                 |
+| `confluence.recent-pages`       | mcp-confluence | `spaceKey`             | Pages updated < 7 dni w space.                                      |
+| `confluence.onboarding-search`  | mcp-confluence | `spaceKey`             | Fuzzy CQL match na onboarding / getting started / intro.            |
+| `confluence.page-with-children` | mcp-confluence | `pageId`               | Page + recursive children subtree (depth 3) jako mermaid tree.      |
+| `gitlab.my-mrs`                 | mcp-gitlab     | —                      | MRs assigned / authored by me (opened, last 14 days).               |
+| `gitlab.pipeline-status`        | mcp-gitlab     | `projectPath`, `ref`   | Pipelines dla branch + success rate.                                |
+| `gitlab.failing-job-log`        | mcp-gitlab     | `projectPath`, `jobId` | Tail 200 linii + classification (compile/test/timeout/dependency).  |
+| `sonar.quality-gate-status`     | mcp-sonar      | `projectKey`           | Current quality gate + per-condition breakdown.                     |
+| `sonar.new-issues`              | mcp-sonar      | `projectKey`           | Issues opened od last 30 dni, grouped per severity.                 |
+| `figma.export-tokens`           | mcp-figma      | `fileKey`              | Design tokens (colors / typography / spacing) jako structured JSON. |
+
+**Wzorzec użycia w VS Code:**
+
+1. Otwórz Copilot Chat (`Ctrl+Alt+I`).
+2. Wpisz `/` żeby zobaczyć listę slash-commands — wybierz np. `/jira.sprint-summary`.
+3. Wypełnij argumenty (Copilot pyta o `projectKey`).
+4. Copilot uruchamia preconfigured prompt → wywołuje `jira.search_issues` z gotowym JQL → renderuje wynik.
+
+Token saving: zamiast pisać "Pokaż mi current sprint dla projektu PROJ i policz velocity, JQL `project = PROJ AND sprint in openSprints()`, fields summary/status/assignee/customfield_10016, group by status..." (~80 tokens), wpisujesz `/jira.sprint-summary PROJ` (~10 tokens). Plus prompt jest **cached** w Copilot Chat — nie tracimy contextu na "powtórz".
+
 ## Workflow scripts — deterministic scaffolders
 
 Dla najczęściej powtarzanych workflow z `.github/prompts/` repo dostarcza **deterministic scaffolders** w `tools/scripts/workflow-*.mjs`. Skrypty tworzą strukturę (folders, frontmatter, snippety, plan markdown) zanim Copilot zacznie pracować — agent dostaje gotowy szkielet zamiast wymyślać shape. Oszczędność tokenów + reproducible output niezależnie od modelu LLM.

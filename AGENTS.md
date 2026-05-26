@@ -71,6 +71,23 @@ Dostępne templates: `npm run template:list` (jira-issue, confluence-page, gitla
 
 Gdy dodajesz template — dodaj fixture w `tests/fixtures/<name>.json` żeby preview działało. Gdy zmieniasz template — bump `version:` w frontmatter (semver minor = compatible, major = breaking shape).
 
+## Workflow scripts (deterministic scaffolders)
+
+Każdy często-używany workflow z `.github/prompts/` ma równoległy skrypt TypeScript w `tools/scripts/workflow-<name>.mjs`. Skrypty są **deterministyczną siatką** — scaffoldują strukturę (pliki, frontmatter, snippety kodu, plan markdown) tak, żeby LLM (Copilot) nie palił tokenów na decyzje o kształcie. Treść merytoryczna (logika, decyzje, kontent) zostaje przy agentach.
+
+| Skrypt                           | Workflow         | Kiedy używać                                                                      |
+| -------------------------------- | ---------------- | --------------------------------------------------------------------------------- |
+| `npm run workflow:add-tool`      | `/add-tool`      | dodaj jeden tool do istniejącego connectora (Zod snippet + defineTool + manifest) |
+| `npm run workflow:new-connector` | `/new-connector` | nowy ALM connector od zera (spec + plan + server stub + folder tree)              |
+
+**Zasada użycia:** zawsze próbuj skrypta najpierw — wynik jest reproducible niezależnie od modelu LLM. Agent (`connector-author`) podejmuje akcję dopiero **po** scaffoldzie (uzupełnia TODO/[?]).
+
+Każdy skrypt:
+
+- waliduje argumenty (preflight checks)
+- emituje staging manifest pod `docs/runs/<date>-<workflow>-<slug>.md`
+- kończy `Next steps` checklisty dla LLM agenta
+
 ## Deterministic gates (validate + audit)
 
 | Skrypt                    | Co robi                                                                                                                                                                  |

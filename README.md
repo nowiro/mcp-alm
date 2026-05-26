@@ -147,6 +147,9 @@ Repo wprowadza **pięć custom agents** w [`.github/agents/`](.github/agents/), 
 | [`epic-strategist`](.github/agents/epic-strategist.agent.md)           | Jira epic breakdown na stories per INVEST, dependency mapping, sprint cuts                  | "Rozbij epic PROJ-100 na stories per INVEST, oszacuj T-shirt sizes, zaproponuj cut na 3 sprinty"                         |
 | [`confluence-architect`](.github/agents/confluence-architect.agent.md) | Information architecture dla Confluence space, page templates, hierarchy plans              | "Audyt space ENG i zaproponuj target tree z lifecycle markers + migration plan z rollback"                               |
 | [`token-tuner`](.github/agents/token-tuner.agent.md)                   | Audyt P50/P95 zużycia tokenów per tool, rekomendacje `budgetTokens` / `fields` / `maxChars` | "Pull session-tracker dla każdego serwera, policz P95, zaproponuj nowe defaulty w osobnym PR (nie w tym samym co audit)" |
+| [`template-author`](.github/agents/template-author.agent.md)           | Owns `templates/responses/` — LLM-agnostic output shape + semver bumps przy breaking changes | "Dodaj template `jira-changelog` (changelog entries z timestamps i actorami), bumpnij confluence-page do v1.1 z attachments thumbnails" |
+| [`test-engineer`](.github/agents/test-engineer.agent.md)               | Coverage ≥ 80%, msw mocks, integration testy gated by sandbox tokens, pin error contract     | "Dodaj testy dla `jira.bulk_create_issues`: happy path z 5 issues, 4xx partial fail (3/5 created), 5xx, dry-run, write-guard denial" |
+| [`dependency-curator`](.github/agents/dependency-curator.agent.md)     | Każda nowa npm dep wymaga ADR, audit prod-deps, lockfile hygiene, supply-chain guard         | "Czy `p-queue` jest sensowną alternatywą do własnego rate-limitera dla jira-client? Napisz ADR z transitive size + license check" |
 
 **Workflow w VS Code:**
 

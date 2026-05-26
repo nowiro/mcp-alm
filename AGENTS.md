@@ -44,6 +44,9 @@ Każdy specjalista ma dedykowany **custom agent** w [`.github/agents/`](.github/
 | [`epic-strategist`](.github/agents/epic-strategist.agent.md)           | Jira epic breakdown na stories per INVEST, sprint cuts                  |
 | [`confluence-architect`](.github/agents/confluence-architect.agent.md) | IA dla Confluence space, page templates, hierarchy                      |
 | [`token-tuner`](.github/agents/token-tuner.agent.md)                   | P50/P95 audit, budgetTokens recommendations                             |
+| [`template-author`](.github/agents/template-author.agent.md)           | owns templates/responses/ — LLM-agnostic output shape + version bumps   |
+| [`test-engineer`](.github/agents/test-engineer.agent.md)               | coverage ≥ 80%, msw mocks, deterministic specs (no flaky)               |
+| [`dependency-curator`](.github/agents/dependency-curator.agent.md)     | każda nowa dep wymaga ADR, audit prod-deps, lockfile hygiene             |
 
 VS Code musi mieć włączone `chat.modeFilesLocations` w [`.vscode/settings.json`](.vscode/settings.json) (patrz [`copilot-instructions.md`](.github/copilot-instructions.md) §Jak Copilot pobiera reguły).
 

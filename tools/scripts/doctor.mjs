@@ -60,7 +60,27 @@ function step(name) {
   process.stdout.write(`\n${c.bold(`▶ ${name}`)}\n`);
 }
 
-// ── 1. Node version ──────────────────────────────────────────────────────────
+// ── 1. Terminal encoding (Windows-only warning) ──────────────────────────────
+// Scripts emit UTF-8 glyphs (✓ ✗ ⚠ ▶ ─). cmd.exe + PowerShell 5.1 default to
+// codepage 437/1252 and will render mojibake. Modern terminals (Windows Terminal,
+// PS 7+, VS Code integrated, ConEmu) advertise themselves via env vars.
+if (IS_WIN) {
+  step('Terminal encoding');
+  const modernTerminal =
+    process.env['WT_SESSION'] || process.env['TERM_PROGRAM'] === 'vscode' || process.env['ConEmuPID'];
+  if (modernTerminal) {
+    emit('terminal', 'ok', 'Modern Windows terminal detected (UTF-8 capable)');
+  } else {
+    emit(
+      'terminal',
+      'warn',
+      'Legacy console detected (cmd.exe or PowerShell 5.1)',
+      'Use Windows Terminal + PowerShell 7+ for proper UTF-8 rendering. Workaround: `chcp 65001` before running scripts.',
+    );
+  }
+}
+
+// ── 2. Node version ──────────────────────────────────────────────────────────
 step('Node version');
 const enginesNode = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).engines?.node;
 const have = process.versions.node;
@@ -74,7 +94,7 @@ if (!enginesNode) {
   emit('node', 'warn', `Node ${have} but engines.node requires ${enginesNode}`, 'Use nvm / volta / fnm to switch');
 }
 
-// ── 2. User-profile config ───────────────────────────────────────────────────
+// ── 3. User-profile config ───────────────────────────────────────────────────
 step('User-profile config');
 
 function resolveConfigPath() {
@@ -116,7 +136,7 @@ if (!existsSync(configPath)) {
   }
 }
 
-// ── 3. Per-connector: baseUrl validation + placeholder check ────────────────
+// ── 4. Per-connector: baseUrl validation + placeholder check ────────────────
 if (configLoaded) {
   step('Per-connector: baseUrl & token validation');
 
@@ -205,7 +225,7 @@ if (configLoaded) {
   }
 }
 
-// ── 4. CA bundle ─────────────────────────────────────────────────────────────
+// ── 5. CA bundle ─────────────────────────────────────────────────────────────
 step('CA bundle (NODE_EXTRA_CA_CERTS)');
 const caPath = process.env['NODE_EXTRA_CA_CERTS'];
 if (!caPath) {
@@ -228,7 +248,7 @@ if (!caPath) {
   }
 }
 
-// ── 5. Per-connector healthcheck (HEAD on baseUrl, 5s timeout) ──────────────
+// ── 6. Per-connector healthcheck (HEAD on baseUrl, 5s timeout) ──────────────
 if (configLoaded && !ARGS.has('--skip-network')) {
   step('Per-connector healthcheck (HEAD, 5s timeout)');
 
@@ -257,7 +277,7 @@ if (configLoaded && !ARGS.has('--skip-network')) {
   }
 }
 
-// ── 6. Summary + exit ────────────────────────────────────────────────────────
+// ── 7. Summary + exit ────────────────────────────────────────────────────────
 if (ARGS.has('--json')) {
   process.stdout.write(JSON.stringify({ findings, summary: summarize() }, null, 2) + '\n');
 } else {

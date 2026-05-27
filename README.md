@@ -119,7 +119,7 @@ npm run test:cov            # z coverage
 npm run lint                # eslint . --max-warnings=0
 npm run typecheck           # tsc --noEmit
 npm run format              # prettier --write
-npm run doctor              # config + zdrowie konektorów
+npm run doctor              # terminal encoding + config + zdrowie konektorów
 npm run audit:prod          # audyt prod-deps, high severity
 npm run verify              # format:check + lint + typecheck + test + build + ai:validate
 npm run extract:jira        # deterministyczny snapshot Jira → output/jira/ (patrz docs/how-to/data-extraction.md)
@@ -127,6 +127,8 @@ npm run extract:confluence  # to samo dla Confluence (page / tree / label)
 npm run extract:gitlab      # GitLab (issues / mrs / pipelines)
 npm run extract:sonar       # SonarQube (quality_gate / issues / hotspots / measures)
 ```
+
+**Windows tip:** skrypty z `tools/scripts/` emitują UTF-8 glyphs (`✓ ✗ ⚠ ▶ ─`). Domyślny `cmd.exe` i PowerShell 5.1 mają codepage 437/1252 i wyświetlą mojibake. Użyj **Windows Terminal + PowerShell 7+** (auto-detected przez `npm run doctor`) albo uruchom `chcp 65001` przed skryptem.
 
 ## Dwie bramki do tej samej warstwy ekstrakcji
 

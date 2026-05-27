@@ -189,6 +189,28 @@ Każdy z 5 serwerów eksponuje **MCP Prompts** (`prompts/list` + `prompts/get`) 
 
 Token saving: zamiast pisać "Pokaż mi current sprint dla projektu PROJ i policz velocity, JQL `project = PROJ AND sprint in openSprints()`, fields summary/status/assignee/customfield_10016, group by status..." (~80 tokens), wpisujesz `/jira.sprint-summary PROJ` (~10 tokens). Plus prompt jest **cached** w Copilot Chat — nie tracimy contextu na "powtórz".
 
+## MCP Resources — preconfigured docs context
+
+Każdy serwer eksponuje **MCP Resources** (`resources/list` + `resources/read`) — read-only docs ładowane przez Copilot jako deterministyczny kontekst. Zamiast pytać LLM "jak skomponować JQL" i tracić tokeny na halucynację, Copilot pobiera plik raz, cache'uje i ma go pod ręką do końca sesji.
+
+| URI                                    | Server         | Co zawiera                                                               |
+| -------------------------------------- | -------------- | ------------------------------------------------------------------------ |
+| `mcp-jira://docs/jql-cheatsheet`       | mcp-jira       | JQL operators, functions, common patterns (assignee, sprint, parent).    |
+| `mcp-jira://docs/custom-fields-guide`  | mcp-jira       | `customfield_NNNNN` → readable names przez field-registry.               |
+| `mcp-confluence://docs/cql-cheatsheet` | mcp-confluence | CQL operators + common patterns dla `search_pages`.                      |
+| `mcp-gitlab://docs/pipeline-patterns`  | mcp-gitlab     | Typowe `.gitlab-ci.yml` kształty, klasy błędów w job log, retry tactics. |
+| `mcp-sonar://docs/severity-guide`      | mcp-sonar      | BLOCKER / CRITICAL / MAJOR / MINOR / INFO — znaczenie + triage hints.    |
+| `mcp-figma://docs/design-tokens-spec`  | mcp-figma      | Output shape dla `figma.export_tokens` — colors / typography / spacing.  |
+
+**Wzorzec użycia w VS Code:**
+
+1. Otwórz Copilot Chat (`Ctrl+Alt+I`).
+2. Wpisz `#mcp.resource` żeby attachować resource jako kontekst do następnej wiadomości (lub kliknij paperclip → "MCP Resource").
+3. Wybierz np. `mcp-jira://docs/jql-cheatsheet` — Copilot ładuje markdown raz i trzyma go w cache do końca konwersacji.
+4. Następne pytania ("napisz JQL który zwraca…") nie wymagają już ekstrakcji wiedzy z modelu — Copilot ma cheatsheet w kontekście.
+
+Token saving: cheatsheet ma ~100 LoC markdown. Załaduj raz (~600 tok), używaj wielokrotnie. Bez resources LLM próbuje wywnioskować syntax z nazwy `search_issues` + dotychczasowych przykładów → halucynacje + retry → 3-4x więcej tokenów na ten sam wynik. Pliki źródłowe w [`templates/resources/`](templates/resources/) — można edytować bez restartu Copilota (refresh w pickerze).
+
 ## Workflow scripts — deterministic scaffolders
 
 Dla najczęściej powtarzanych workflow z `.github/prompts/` repo dostarcza **deterministic scaffolders** w `tools/scripts/workflow-*.mjs`. Skrypty tworzą strukturę (folders, frontmatter, snippety, plan markdown) zanim Copilot zacznie pracować — agent dostaje gotowy szkielet zamiast wymyślać shape. Oszczędność tokenów + reproducible output niezależnie od modelu LLM.

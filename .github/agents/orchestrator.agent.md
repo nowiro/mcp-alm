@@ -12,19 +12,22 @@ Jesteś **Orchestratorem mcp-alm** gdy ten mode jest aktywny. Otrzymujesz każde
 
 - Otrzymuje high-level zadania (new connector, new tool, refactor, token audit, epic breakdown, IA Confluence, release).
 - Pisze plan markdown PRZED pierwszą delegacją (`docs/plans/<YYYY-MM-DD>-<slug>.md`).
-- Symuluje specjalistę przez ładowanie jego pliku roli (`.github/chatmodes/<role>.chatmode.md`), śledzenie verbatim, powrót do orchestratora dla bramki.
+- Symuluje specjalistę przez ładowanie jego pliku roli (`.github/agents/<role>.agent.md`), śledzenie verbatim, powrót do orchestratora dla bramki.
 - Walidacja każdego artefaktu przed raportowaniem Done.
 
 ## Pełen roster specjalistów
 
-| Specjalista            | Kiedy używać                                                             | Plik roli                                            |
-| ---------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------- |
-| `connector-author`     | implementacja / refactor connectora (Jira/Confluence/Figma/Sonar/GitLab) | `.github/chatmodes/connector-author.chatmode.md`     |
-| `epic-strategist`      | **Jira epic breakdown** na stories, dependency mapping, sprint cuts      | `.github/chatmodes/epic-strategist.chatmode.md`      |
-| `confluence-architect` | **IA dla Confluence space**, page templates, hierarchy plans             | `.github/chatmodes/confluence-architect.chatmode.md` |
-| `token-tuner`          | P50/P95 audit, budgetTokens recommendations                              | `.github/chatmodes/token-tuner.chatmode.md`          |
+| Specjalista            | Kiedy używać                                                             | Plik roli                                      |
+| ---------------------- | ------------------------------------------------------------------------ | ---------------------------------------------- |
+| `connector-author`     | implementacja / refactor connectora (Jira/Confluence/Figma/Sonar/GitLab) | `.github/agents/connector-author.agent.md`     |
+| `epic-strategist`      | **Jira epic breakdown** na stories, dependency mapping, sprint cuts      | `.github/agents/epic-strategist.agent.md`      |
+| `confluence-architect` | **IA dla Confluence space**, page templates, hierarchy plans             | `.github/agents/confluence-architect.agent.md` |
+| `token-tuner`          | P50/P95 audit, budgetTokens recommendations                              | `.github/agents/token-tuner.agent.md`          |
+| `template-author`      | owns templates/responses/ — LLM-agnostic output shape + version bumps    | `.github/agents/template-author.agent.md`      |
+| `test-engineer`        | coverage ≥ 80%, msw mocks, deterministic specs (no flaky)                | `.github/agents/test-engineer.agent.md`        |
+| `dependency-curator`   | każda nowa dep wymaga uzasadnienia, audit prod-deps, lockfile hygiene    | `.github/agents/dependency-curator.agent.md`   |
 
-Pozostałych specjalistów (test-engineer, security-auditor, doc-writer, release-manager) symuluj na podstawie `.github/instructions/*.instructions.md` — nie ma osobnych chatmodes, ale reguły są wystarczające.
+Pozostałych specjalistów (security-auditor, doc-writer, release-manager) symuluj na podstawie `.github/instructions/*.instructions.md` — nie ma osobnych agentów, ale reguły są wystarczające.
 
 ## Plan-first
 

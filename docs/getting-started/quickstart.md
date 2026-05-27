@@ -12,7 +12,7 @@
 ## 1. Clone + install
 
 ```sh
-git clone https://github.com/<your-org>/mcp-alm.git
+git clone https://github.com/nowiro/mcp-alm.git
 cd mcp-alm
 # opcjonalnie: nvm install 22 && nvm use 22
 npm ci             # używa package-lock.json

@@ -9,8 +9,11 @@ mcp-alm wystawia dwie bramki nad tą samą warstwą `src/shared/`:
 1. **MCP stdio** — **pięć samodzielnych serwerów**, każdy mówiący JSON-RPC po
    stdio. Host (VS Code 1.121+, IntelliJ AI Assistant / GitHub Copilot
    2026.1.2+, Claude Desktop, Cursor, własny kod Agent SDK) uruchamia jeden z
-   nich jako proces dziecięcy i routuje każde `tools/list` i `tools/call`
-   widziane od LLM do niego. **Interactive, niedeterministyczne** (agent
+   nich jako proces dziecięcy. Każdy serwer rejestruje **trzy MCP
+   capabilities**: **tools** (`tools/list` + `tools/call` — operacje upstream),
+   **prompts** (`prompts/list` + `prompts/get` — preconfigured slash-commands)
+   i **resources** (`resources/list` + `resources/read` — read-only docs
+   cache'owane przez hosta). **Interactive, niedeterministyczne** (agent
    decyduje co wywołać).
 2. **Skrypty ekstrakcji** — `src/extract-{jira,confluence}.ts`,
    config-driven (`extract.config.<connector>.json`). **Non-interactive,

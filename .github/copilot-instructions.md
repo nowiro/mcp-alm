@@ -74,6 +74,11 @@ Destylowane z [`mcp-server.instructions.md`](instructions/mcp-server.instruction
 
 - **Jeden serwer per integracja.** Każdy `src/server-<tool>.ts` jest
   uruchamialny niezależnie jako `npx mcp-<tool>`.
+- **Trzy MCP capabilities per serwer:**
+  - **Tools** (`tools/list` + `tools/call`) — operacje upstream (read / write / destructive). Wymagane.
+  - **Prompts** (`prompts/list` + `prompts/get`) — preconfigured slash-commands w Copilot Chat. Pusta tablica jeśli brak.
+  - **Resources** (`resources/list` + `resources/read`) — read-only docs cache'owane przez hosta (cheatsheets, guides). Pusta tablica jeśli brak.
+    Każdy serwer wpina wszystkie trzy do `bootMcpServerIfEnabled({ name, tools, prompts, resources })`.
 - **Tool naming:** `<tool>.<verb>_<noun>` — `jira.get_issue`,
   `confluence.search_pages`, `gitlab.list_mrs`. Prefix MUSI matchować
   nazwę serwera.

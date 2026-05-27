@@ -116,13 +116,15 @@ Pliki w [`.github/instructions/`](.github/instructions/) są auto-aplikowane prz
 
 ## Gdzie idzie nowa praca
 
-| Rodzaj pracy                           | Sugerowany katalog                                       |
-| -------------------------------------- | -------------------------------------------------------- |
-| Nowe narzędzie w istniejącym serwerze  | `src/server-<tool>.ts` (dodaj kolejny `defineTool({…})`) |
-| Nowy konektor dla nowego narzędzia ALM | Nowy folder `src/<tool>/` + `src/server-<tool>.ts`       |
-| Cross-cutting helper                   | `src/shared/` (musi mieć obok plik `*.spec.ts`)          |
-| Doc                                    | `docs/<section>/` — Diátaxis layout                      |
-| Deterministyczny pipeline ekstrakcji   | `src/extract-<connector>.ts`                             |
+| Rodzaj pracy                           | Sugerowany katalog                                                                                                                |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Nowe narzędzie w istniejącym serwerze  | `src/server-<tool>.ts` (dodaj kolejny `defineTool({…})`)                                                                          |
+| Nowy konektor dla nowego narzędzia ALM | Nowy folder `src/<tool>/` + `src/server-<tool>.ts`                                                                                |
+| Nowy MCP prompt (slash-command)        | `definePrompt({…})` w array `prompts` w `src/server-<tool>.ts`                                                                    |
+| Nowy MCP resource (read-only doc)      | Markdown w `templates/resources/<server>-<topic>.md` + `defineMarkdownResource({…})` w array `resources` w `src/server-<tool>.ts` |
+| Cross-cutting helper                   | `src/shared/` (musi mieć obok plik `*.spec.ts`)                                                                                   |
+| Doc                                    | `docs/<section>/` — Diátaxis layout                                                                                               |
+| Deterministyczny pipeline ekstrakcji   | `src/extract-<connector>.ts`                                                                                                      |
 
 ## Dwie bramki do tej samej warstwy ekstrakcji
 
@@ -135,4 +137,4 @@ Obie bramki dzielą 100% kodu reshape — nie duplikuj.
 
 ## Koordynacja z innymi repo
 
-Repo jest świadomie **standalone**. Sibling [`mcp-devtools`](https://github.com/<your-org>/mcp-devtools) wystawia dev-workflow primitives — używa naszego `http-client.ts` jako wzorca SSRF/proxy gdy doda tool z siecią.
+Repo jest świadomie **standalone**. Sibling [`mcp-devtools`](https://github.com/nowiro/mcp-devtools) wystawia dev-workflow primitives — używa naszego `http-client.ts` jako wzorca SSRF/proxy gdy doda tool z siecią.

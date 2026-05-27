@@ -19,8 +19,8 @@ go pierwsze.
 
 Otwórz issue używając templatek:
 
-- [Bug report](https://github.com/<your-org>/mcp-alm/issues/new?template=bug.yml)
-- [Feature request](https://github.com/<your-org>/mcp-alm/issues/new?template=feature.yml)
+- [Bug report](https://github.com/nowiro/mcp-alm/issues/new?template=bug.yml)
+- [Feature request](https://github.com/nowiro/mcp-alm/issues/new?template=feature.yml)
 
 Przed otwarciem: poszukaj w istniejących issues (otwartych i zamkniętych) —
 duplikaty trafiają na koniec kolejki.

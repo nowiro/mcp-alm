@@ -26,6 +26,36 @@ Figma / SonarQube / GitLab.
 przeciążaj nazwy narzędzia cross serwerami; każdy serwer posiada swój
 prefix.
 
+## 2.5. Pełen kontrakt `bootMcpServerIfEnabled` — tools + prompts + resources
+
+`StartOptions` w [`src/shared/mcp-server.ts`](../../src/shared/mcp-server.ts)
+wymaga **trzech** tablic, każda obowiązkowo przekazana (pusta `[]` jeśli serwer
+nie ma danej capability):
+
+```ts
+await bootMcpServerIfEnabled({
+  name: SERVER_NAME,
+  tools, // ToolDefinition[] — operacje upstream
+  prompts, // PromptDefinition[] — slash-commands; `[]` jeśli brak
+  resources, // ResourceDefinition[] — read-only docs; `[]` jeśli brak
+});
+```
+
+- **`prompts`** (`prompts/list` + `prompts/get`) — preconfigured slash-commands
+  pokazywane w Copilot Chat (`/<server>.<prompt>`). Definiuj przez
+  `definePrompt({ name, description, arguments?, buildMessages })` z
+  [`src/shared/prompt.ts`](../../src/shared/prompt.ts). Use case: zastąpienie
+  złożonego "napisz JQL który…" jednym `/jira.sprint-summary PROJ`.
+- **`resources`** (`resources/list` + `resources/read`) — read-only docs / configs
+  / cheatsheets, które Copilot cache'uje raz i ma w kontekście do końca sesji.
+  Najprościej: markdown w `templates/resources/<server>-<topic>.md` +
+  `defineMarkdownResource({ uri, name, description, file })` z
+  [`src/shared/resource.ts`](../../src/shared/resource.ts). Helper resolwuje
+  path z `import.meta.url`, więc działa cross-platform po `npx mcp-<server>`
+  z dowolnego `cwd`.
+- Convention URI: `mcp-<server>://docs/<slug-kebab>` (np.
+  `mcp-jira://docs/jql-cheatsheet`). MIME default `text/markdown`.
+
 ## 3. Read-first, write-guarded
 
 - Każdy serwer defaultuje do **read-only**. Write tools (mutujące operacje

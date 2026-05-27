@@ -7,8 +7,16 @@ projekt stosuje [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **MCP Resources** (`resources/list` + `resources/read`) — każdy z 5 serwerów eksponuje read-only docs ładowane przez Copilot jako deterministyczny kontekst. URIs: `mcp-jira://docs/{jql-cheatsheet,custom-fields-guide}`, `mcp-confluence://docs/cql-cheatsheet`, `mcp-gitlab://docs/pipeline-patterns`, `mcp-sonar://docs/severity-guide`, `mcp-figma://docs/design-tokens-spec`. Token saving: cheatsheet ładowany raz, cache'owany przez Copilot Chat — bez halucynacji JQL/CQL syntax.
+- **`src/shared/resource.ts`** — `ResourceDefinition` + `defineResource` + helper `defineMarkdownResource({ uri, name, description, file })` który resolwuje path z `templates/resources/<file>.md` przez `import.meta.url` (działa cross-platform niezależnie od `cwd` callera).
+- **`templates/resources/`** — 6 markdown źródeł: `jira-jql-cheatsheet.md`, `jira-custom-fields-guide.md`, `confluence-cql-cheatsheet.md`, `gitlab-pipeline-patterns.md`, `sonar-severity-guide.md`, `figma-design-tokens-spec.md`. Edytowalne bez restartu Copilota.
+- **`README.md`** — sekcja "MCP Resources — preconfigured docs context" z tabelą URI + wzorcem użycia w VS Code Copilot Chat.
+
 ### Changed
 
+- **`src/shared/mcp-server.ts`** — `StartOptions` rozszerzone o `resources: readonly ResourceDefinition[]`; serwer rejestruje teraz `ListResourcesRequestSchema` + `ReadResourceRequestSchema` z capability `resources: {}`.
 - **SHA-pinning wszystkich GitHub Actions** — `actions/checkout`, `actions/setup-node`, `actions/upload-artifact`, `amannn/action-semantic-pull-request`, `gitleaks/gitleaks-action`, `ossf/scorecard-action`, `github/codeql-action/upload-sarif` w `ci.yml`, `pr-checks.yml` i `scorecard.yml` zmienione z floating tag (np. `@v4`) na konkretne commit SHA. OpenSSF Scorecard przestanie flagować "Pinned-Dependencies".
 - **`README.md`** + **`CHANGELOG.md`** — `<your-org>` → `nowiro`.
 

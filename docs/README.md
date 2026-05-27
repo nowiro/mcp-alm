@@ -50,6 +50,11 @@ który da Ci produktywność.
 - [Kody błędów](reference/error-codes.md) — kody błędów JSON-RPC z remediacją.
 - [Narzędzia](reference/tools.md) — pełna lista narzędzi każdego z pięciu
   serwerów, klasa (read/write/destructive), opis.
+- **MCP Prompts + Resources** — preconfigured slash-commands i read-only docs
+  są udokumentowane bezpośrednio w głównym [README.md](../README.md) (sekcje
+  "MCP Prompts — preconfigured slash-commands" i "MCP Resources —
+  preconfigured docs context"). Pełne tabele URI per serwer + wzorce użycia
+  w Copilot Chat.
 
 ### `explanation/` — projekt i uzasadnienie
 

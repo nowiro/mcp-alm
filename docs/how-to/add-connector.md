@@ -26,6 +26,8 @@ import { z } from 'zod';
 import { loadXxxAuth } from './shared/auth.js';
 import { createNamedHttpClient } from './shared/http-client.js';
 import { bootMcpServerIfEnabled, defineTool, usageHistoryTool, type ToolDefinition } from './shared/mcp-server.js';
+import { definePrompt, type PromptDefinition } from './shared/prompt.js';
+import { defineMarkdownResource, type ResourceDefinition } from './shared/resource.js';
 
 const SERVER_NAME = 'mcp-<name>';
 
@@ -44,9 +46,24 @@ const tools: ToolDefinition[] = [
   usageHistoryTool(SERVER_NAME),
 ];
 
-export { tools };
+// Preconfigured slash-commands (`prompts/list` + `prompts/get`). `[]` jeśli brak.
+const prompts: PromptDefinition[] = [
+  // definePrompt({ name: '<connector>.my-default', description: '…', buildMessages: () => [...] }),
+];
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools });
+// Read-only docs cached przez Copilot Chat (`resources/list` + `resources/read`). `[]` jeśli brak.
+const resources: ResourceDefinition[] = [
+  // defineMarkdownResource({
+  //   uri: 'mcp-<connector>://docs/<topic>',
+  //   name: '<topic> cheatsheet',
+  //   description: 'One-line shown w Copilot resource pickerze.',
+  //   file: '<connector>-<topic>.md', // → templates/resources/<connector>-<topic>.md
+  // }),
+];
+
+export { tools, prompts, resources };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts, resources });
 ```
 
 ## 3. Zdefiniuj uwierzytelnianie w `src/shared/auth.ts`
@@ -125,13 +142,23 @@ Dodaj `src/<connector>-*.spec.ts` lub testy w `src/server-<name>.ts`:
 - Test auth: brak tokena → rzuca z użytecznym komunikatem.
 - Test write-guard (jeśli mutujący): unset env → rzuca `WriteDeniedError`.
 
-## 10. Udokumentuj konektor
+## 10. Prompts + Resources (opcjonalne, ale zalecane)
+
+Każdy serwer może wystawić obok narzędzi również **MCP Prompts** (slash-commands) i **MCP Resources** (cached read-only docs). Oba są tanie do dodania i ratują tokeny.
+
+- **Prompty** — preconfigured slash-commands w Copilot Chat. Dodaj `definePrompt({…})` do array `prompts` w `src/server-<name>.ts`. Dobry pierwszy prompt: `recent-issues` / `my-mrs` — assignment + last 7/14 days.
+- **Resources** — write-once markdown w `templates/resources/<name>-<topic>.md` + `defineMarkdownResource({…})` do array `resources`. Dobry pierwszy resource: cheatsheet query language (JQL / CQL / GraphQL), guide do field mapping, lista typowych error codes upstream.
+
+Wzorce pokazane w istniejących serwerach (`src/server-jira.ts`, `src/server-confluence.ts`). Pełna sekcja README → "MCP Resources — preconfigured docs context".
+
+## 11. Udokumentuj konektor
 
 - Dodaj wiersz do tabeli konektorów w [`README.md`](../../README.md).
+- Jeśli dodałeś prompts / resources — wpisz je do tabel "MCP Prompts" / "MCP Resources" w README.
 - Jeśli upstream używa niestandardowego nagłówka auth, wskaż to w sekcji
   konfiguracji.
 
-## 11. Verify
+## 12. Verify
 
 ```bash
 npm run verify   # format + lint + typecheck + test + build + ai:validate

@@ -138,7 +138,8 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'confluence.search_pages',
-    description: 'CQL search. Walks pages under a token budget (default 4 000) and returns canonical hits.',
+    description:
+      'CQL search with budget-aware cursor pagination (default 2,500 tokens, max 80,000). Returns canonical hits + truncated flag; may walk multiple upstream pages.',
     inputSchema: SearchInput,
     async handle({ cql, limit, budgetTokens }, ctx) {
       const budget = new BudgetTracker(budgetTokens);
@@ -168,7 +169,7 @@ const tools: ToolDefinition[] = [
   defineTool({
     name: 'confluence.search_pages_by_label',
     description:
-      'Search Confluence pages tagged with any of the given labels (OR semantics). Optionally scope to a single space by key. Returns canonical hits (id, title, spaceKey, url, lastModified, labels).',
+      'Label-scoped page search (OR semantics across labels, single upstream call, O(1)). Optionally scoped to one space. Returns canonical hits without pagination.',
     inputSchema: SearchPagesByLabelInput,
     async handle({ labels, space, limit }, ctx) {
       const cql = buildLabelSearchCql({ labels, ...(space ? { space } : {}) });

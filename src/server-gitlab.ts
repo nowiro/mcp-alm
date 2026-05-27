@@ -157,7 +157,8 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'gitlab.list_mrs',
-    description: 'List merge requests on a project. Walks pages under a token budget; returns canonical shapes.',
+    description:
+      'List merge requests with budget-aware pagination (default 2,500 tokens, max 80,000). Returns canonical shapes; expensive on large projects.',
     inputSchema: ListMrsInput,
     async handle({ projectId, state, limit, budgetTokens }, ctx) {
       const budget = new BudgetTracker(budgetTokens);
@@ -178,7 +179,8 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'gitlab.list_issues',
-    description: 'List issues on a project. Walks pages under a token budget; returns canonical shapes.',
+    description:
+      'List issues with budget-aware pagination (default 2,500 tokens, max 80,000). Returns canonical shapes; expensive on noisy projects.',
     inputSchema: ListIssuesInput,
     async handle({ projectId, state, labels, limit, budgetTokens }, ctx) {
       const budget = new BudgetTracker(budgetTokens);
@@ -199,7 +201,8 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'gitlab.list_pipelines',
-    description: 'List recent pipelines. Returns canonical shapes (id, status, ref, sha).',
+    description:
+      'List recent pipelines with budget-aware pagination (default 2,500 tokens). Returns canonical shapes (id, status, ref, sha).',
     inputSchema: ListPipelinesInput,
     async handle({ projectId, ref, limit, budgetTokens }, ctx) {
       const budget = new BudgetTracker(budgetTokens);
@@ -236,7 +239,8 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'gitlab.get_pipeline_jobs',
-    description: 'List jobs for a pipeline (name, stage, status, duration). Useful for "which step failed?".',
+    description:
+      'List pipeline jobs (single API call, O(jobs) bounded ≤ ~100). Returns name, stage, status, duration per job. Useful for "which step failed?".',
     inputSchema: GetPipelineJobsInput,
     async handle({ projectId, pipelineId, limit }, ctx) {
       const raw = await http.request<readonly RawPipelineJob[]>({

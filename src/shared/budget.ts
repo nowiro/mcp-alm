@@ -8,6 +8,13 @@
  *   - Heuristic: 3.5 chars per token (Claude/Anthropic average for mixed
  *     English + JSON), padded with a 25 % safety margin.
  *
+ * Comparison: `github/spec-kit` community extension `spec-kit-token-analyzer`
+ * uses 1 token ≈ 4 chars (GPT BPE average) without a safety margin. That's
+ * an *ex-post measurement* heuristic — fine for "how many tokens did this
+ * preset emit". Our heuristic is a *pre-flight gate* — we'd rather stop
+ * pagination one page early than burst the host context, hence the lower
+ * ratio + the 25 % margin (conservative bias).
+ *
  * Override per-call by constructing a `BudgetTracker` with a custom estimator.
  */
 

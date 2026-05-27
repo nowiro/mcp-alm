@@ -43,7 +43,7 @@ const tools: ToolDefinition[] = [
   defineTool({
     name: 'figma.get_file',
     description:
-      'Fetch a Figma file. Use `depth` (1-4) via get_file_nodes for surgical reads — entire document trees can be 5+ MB. `maxNodes` is a soft cap that surfaces a hint when crossed.',
+      'Fetch entire Figma file (expensive O(tree size), can be 5+ MB; soft cap maxNodes=2,000 triggers truncation hint). For surgical reads prefer get_file_nodes with explicit ids.',
     inputSchema: GetFileInput,
     async handle({ fileKey, maxNodes }, ctx) {
       const raw = await http.request<{ document?: { children?: readonly unknown[] } }>({

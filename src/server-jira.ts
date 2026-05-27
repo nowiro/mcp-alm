@@ -197,7 +197,7 @@ const tools: ToolDefinition[] = [
   defineTool({
     name: 'jira.search_issues',
     description:
-      'JQL search via /rest/api/3/search/jql (cursor pagination). Walks pages under a token budget (default 4 000). Pass `fields` to narrow the upstream projection. Returns `{ items, truncated, next? }` — call `jira.approximate_count` for total.',
+      'JQL search via /rest/api/3/search/jql with budget-aware cursor pagination (default 2,500 tokens, max 80,000). Pass `fields` to narrow upstream projection. Returns `{ items, truncated, next? }` — call `jira.approximate_count` for total.',
     inputSchema: SearchInput,
     async handle({ jql, limit, budgetTokens, fields }, ctx) {
       const budget = new BudgetTracker(budgetTokens);

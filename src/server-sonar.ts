@@ -121,7 +121,8 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'sonar.list_issues',
-    description: 'List issues for a project, filterable by severity / type / branch / pull request. Paginated.',
+    description:
+      'List issues with budget-aware pagination (default 2,500 tokens, max 80,000). Filter by severity / type / branch / pull request; expensive on noisy projects.',
     inputSchema: IssuesInput,
     async handle({ projectKey, severities, types, branch, pullRequest, limit, budgetTokens }, ctx) {
       const budget = new BudgetTracker(budgetTokens);
@@ -206,7 +207,8 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'sonar.measures',
-    description: 'Fetch metric values for a project. Supports branch / pull-request scoped reads.',
+    description:
+      'Fetch metric values for a project (single API call, O(1)). Optionally scoped to branch or pull request.',
     inputSchema: MeasuresInput,
     async handle({ projectKey, metrics, branch, pullRequest }, ctx) {
       return http.request({

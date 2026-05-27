@@ -20,6 +20,7 @@ import {
   type ToolDefinition,
 } from './shared/mcp-server.js';
 import { definePrompt, type PromptDefinition } from './shared/prompt.js';
+import { defineMarkdownResource, type ResourceDefinition } from './shared/resource.js';
 import { cursorAdapter } from './shared/pagination.js';
 import { diffGateStatuses, type SonarProjectStatus } from './shared/sonar-gate-diff.js';
 import {
@@ -307,7 +308,18 @@ const prompts: PromptDefinition[] = [
   }),
 ];
 
-// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
-export { tools, prompts };
+// ── resources (MCP `resources/list` + `resources/read`) ──────────────────
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts });
+const resources: ResourceDefinition[] = [
+  defineMarkdownResource({
+    uri: 'mcp-sonar://docs/severity-guide',
+    name: 'Sonar severity guide',
+    description: 'BLOCKER / CRITICAL / MAJOR / MINOR / INFO — what each level means + triage hints.',
+    file: 'sonar-severity-guide.md',
+  }),
+];
+
+// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
+export { tools, prompts, resources };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts, resources });

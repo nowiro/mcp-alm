@@ -9,6 +9,7 @@ import { emitCss, emitScss, emitTs, type Token, type TokenKind } from './shared/
 import { createNamedHttpClient } from './shared/http-client.js';
 import { bootMcpServerIfEnabled, defineTool, usageHistoryTool, type ToolDefinition } from './shared/mcp-server.js';
 import { definePrompt, type PromptDefinition } from './shared/prompt.js';
+import { defineMarkdownResource, type ResourceDefinition } from './shared/resource.js';
 
 const SERVER_NAME = 'mcp-figma';
 
@@ -266,10 +267,21 @@ const prompts: PromptDefinition[] = [
   }),
 ];
 
-// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
-export { tools, prompts };
+// ── resources (MCP `resources/list` + `resources/read`) ──────────────────
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts });
+const resources: ResourceDefinition[] = [
+  defineMarkdownResource({
+    uri: 'mcp-figma://docs/design-tokens-spec',
+    name: 'Design tokens spec',
+    description: 'Output shape for `figma.export_tokens` — colors / typography / spacing categories.',
+    file: 'figma-design-tokens-spec.md',
+  }),
+];
+
+// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
+export { tools, prompts, resources };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts, resources });
 
 // ── helpers ────────────────────────────────────────────────────────────────
 

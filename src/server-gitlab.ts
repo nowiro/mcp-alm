@@ -30,6 +30,7 @@ import {
   type ToolDefinition,
 } from './shared/mcp-server.js';
 import { definePrompt, type PromptDefinition } from './shared/prompt.js';
+import { defineMarkdownResource, type ResourceDefinition } from './shared/resource.js';
 import { cursorAdapter } from './shared/pagination.js';
 import { assertWriteAllowed, isWriteEnabled } from './shared/write-guard.js';
 
@@ -519,10 +520,21 @@ const prompts: PromptDefinition[] = [
   }),
 ];
 
-// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
-export { tools, prompts };
+// ── resources (MCP `resources/list` + `resources/read`) ──────────────────
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts });
+const resources: ResourceDefinition[] = [
+  defineMarkdownResource({
+    uri: 'mcp-gitlab://docs/pipeline-patterns',
+    name: 'GitLab pipeline patterns',
+    description: 'Common `.gitlab-ci.yml` shapes, job log error classes, retry tactics.',
+    file: 'gitlab-pipeline-patterns.md',
+  }),
+];
+
+// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
+export { tools, prompts, resources };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts, resources });
 
 // ── helpers ────────────────────────────────────────────────────────────────
 

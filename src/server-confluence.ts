@@ -27,6 +27,7 @@ import {
   type ToolDefinition,
 } from './shared/mcp-server.js';
 import { definePrompt, type PromptDefinition } from './shared/prompt.js';
+import { defineMarkdownResource, type ResourceDefinition } from './shared/resource.js';
 import { cursorAdapter } from './shared/pagination.js';
 import { adfToMarkdown, type AdfNode } from './shared/adf.js';
 import { assertWriteAllowed, isWriteEnabled } from './shared/write-guard.js';
@@ -483,10 +484,21 @@ const prompts: PromptDefinition[] = [
   }),
 ];
 
-// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
-export { tools, prompts };
+// ── resources (MCP `resources/list` + `resources/read`) ──────────────────
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts });
+const resources: ResourceDefinition[] = [
+  defineMarkdownResource({
+    uri: 'mcp-confluence://docs/cql-cheatsheet',
+    name: 'CQL cheatsheet',
+    description: 'Confluence Query Language — operators, functions, common patterns for `search_pages`.',
+    file: 'confluence-cql-cheatsheet.md',
+  }),
+];
+
+// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
+export { tools, prompts, resources };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts, resources });
 
 // ── helpers ────────────────────────────────────────────────────────────────
 

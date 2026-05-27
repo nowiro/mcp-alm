@@ -17,7 +17,9 @@ import {
   CallToolRequestSchema,
   GetPromptRequestSchema,
   ListPromptsRequestSchema,
+  ListResourcesRequestSchema,
   ListToolsRequestSchema,
+  ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
@@ -26,6 +28,7 @@ import { toMcpInputSchema } from './json-schema.js';
 import { compactJson } from './llm-optimize.js';
 import { createLogger, type Logger } from './log.js';
 import type { PromptDefinition } from './prompt.js';
+import type { ResourceDefinition } from './resource.js';
 import { buildMeta, wrapResponse, type ToolResponse } from './response-meta.js';
 import { sessionTracker } from './session-tracker.js';
 import { getRepoVersion } from './version.js';
@@ -89,6 +92,14 @@ export interface StartOptions {
    * Pass `[]` jawnie jeśli serwer nie ma promptów (rare).
    */
   readonly prompts: readonly PromptDefinition[];
+  /**
+   * Read-only docs / configs / samples exposed via MCP `resources/list` +
+   * `resources/read`. Copilot Chat loads them as deterministic context
+   * (e.g. JQL cheatsheet, design-token spec) — cached, no LLM roundtrip.
+   *
+   * Pass `[]` jawnie jeśli serwer nie ma resources.
+   */
+  readonly resources: readonly ResourceDefinition[];
 }
 
 /**
@@ -136,8 +147,12 @@ export async function startMcpServer(options: StartOptions): Promise<void> {
   const logger = createLogger({ server: options.name, version });
   const byName = new Map(options.tools.map((t) => [t.name, t]));
 
-  const server = new Server({ name: options.name, version }, { capabilities: { tools: {}, prompts: {} } });
+  const server = new Server(
+    { name: options.name, version },
+    { capabilities: { tools: {}, prompts: {}, resources: {} } },
+  );
   const promptsByName = new Map(options.prompts.map((p) => [p.name, p]));
+  const resourcesByUri = new Map(options.resources.map((r) => [r.uri, r]));
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: options.tools.map((t) => ({
@@ -172,6 +187,32 @@ export async function startMcpServer(options: StartOptions): Promise<void> {
     return {
       description: prompt.description,
       messages: prompt.buildMessages(args),
+    };
+  });
+
+  server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+    resources: options.resources.map((r) => ({
+      uri: r.uri,
+      name: r.name,
+      description: r.description,
+      mimeType: r.mimeType,
+    })),
+  }));
+
+  server.setRequestHandler(ReadResourceRequestSchema, async (req) => {
+    const resource = resourcesByUri.get(req.params.uri);
+    if (!resource) {
+      throw new Error(`Unknown resource: ${req.params.uri}`);
+    }
+    const text = await resource.read();
+    return {
+      contents: [
+        {
+          uri: resource.uri,
+          mimeType: resource.mimeType,
+          text,
+        },
+      ],
     };
   });
 

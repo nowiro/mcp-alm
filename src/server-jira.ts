@@ -36,6 +36,7 @@ import {
   type ToolDefinition,
 } from './shared/mcp-server.js';
 import { definePrompt, type PromptDefinition } from './shared/prompt.js';
+import { defineMarkdownResource, type ResourceDefinition } from './shared/resource.js';
 import { jiraJqlCursorAdapter } from './shared/pagination.js';
 import { assertWriteAllowed, isWriteEnabled } from './shared/write-guard.js';
 import { adfToMarkdown, type AdfNode } from './shared/adf.js';
@@ -607,10 +608,29 @@ const prompts: PromptDefinition[] = [
   }),
 ];
 
-// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
-export { tools, prompts };
+// ── resources (MCP `resources/list` + `resources/read`) ──────────────────
+//
+// Read-only docs ładowane przez Copilot jako kontekst (no LLM roundtrip).
 
-await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts });
+const resources: ResourceDefinition[] = [
+  defineMarkdownResource({
+    uri: 'mcp-jira://docs/jql-cheatsheet',
+    name: 'JQL cheatsheet',
+    description: 'Operators, functions, common JQL patterns (assignee, sprint, parent, project).',
+    file: 'jira-jql-cheatsheet.md',
+  }),
+  defineMarkdownResource({
+    uri: 'mcp-jira://docs/custom-fields-guide',
+    name: 'Jira custom fields guide',
+    description: 'How `customfield_NNNNN` resolves to readable names via field-registry.',
+    file: 'jira-custom-fields-guide.md',
+  }),
+];
+
+// Re-exported dla konsumentów importujących moduł bez bootu (patrz `MCP_NO_BOOT` w `bootMcpServerIfEnabled`).
+export { tools, prompts, resources };
+
+await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts, resources });
 
 // ── helpers ────────────────────────────────────────────────────────────────
 

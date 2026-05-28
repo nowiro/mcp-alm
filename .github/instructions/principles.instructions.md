@@ -5,183 +5,95 @@ description: Zasady inżynierskie — DRY, SOLID, KISS, YAGNI, kompozycja nad dz
 
 # Zasady inżynierskie
 
-To **złote reguły**, na których opiera się każdy agent i kontrybutor gdy
-nie ma pewności. Siedzą obok [`core.instructions.md`](core.instructions.md)
-na szczycie łańcucha priorytetu. Nie zastępują reguł zakresowych
-(security, mcp-server, connectors, tokens) — są meta-regułami, które te
-reguły wcielają.
+**Złote reguły** — meta-reguły, na których opiera się każdy agent gdy nie ma pewności. Nie zastępują reguł zakresowych (security, mcp-server, connectors, tokens) — są tym, co tamte reguły wcielają.
 
 ## 1. DRY — Don't Repeat Yourself
 
-Każda istotna wiedza ma żyć w jednym miejscu w systemie. Duplikacja
-wymusza, że każda zmiana musi być zsynchronizowana ręcznie — pierwszy
-zapomniany sync to bug.
+Każda istotna wiedza w jednym miejscu. Duplikacja = każda zmiana wymaga manual sync; pierwszy zapomniany sync to bug.
 
-- Reguły walidacji (Zod schemas) deklarowane raz, importowane.
-- Stałe (timeouty, budżety, limity) w `src/shared/` jako exportowane
-  named constants, nie inline.
-- Treści `description` narzędzi MCP: jedna canonical fraza per narzędzie,
-  nie powielana w docs.
+- Zod schemas: deklaracja raz, import wszędzie.
+- Stałe (timeouty, budżety, limity) w `src/shared/` jako exported named constants.
+- `description` MCP tooli: jedna canonical fraza, nie powielana w docs.
 
-**Wyjątek:** _Rule of three_. Pierwsza duplikacja jest OK. Druga jest
-podejrzana. Trzecia ekstrahuje wspólny helper.
+**Wyjątek — Rule of three:** pierwsza duplikacja OK, druga podejrzana, trzecia ekstrahuje helper.
 
 ## 2. SOLID
 
-### SRP — Single Responsibility
+- **SRP** — jedna funkcja / moduł, jeden powód do zmiany. `http-client.ts` = HTTP retry/dedup/ETag, nie reshape. `field-registry.ts` = discovery + reshape, nie HTTP. Każdy `server-*.ts` = composition root, brak biznesowej logiki.
+- **OCP** — otwarte na rozszerzenia, zamknięte na modyfikacje. Nowy tool = nowy `defineTool({...})`, nie edycja istniejących handlerów.
+- **LSP** — subtypy wymienne. `AuthConfig` to discriminated union; `http-client.ts` obsługuje każdą wariację jednolicie.
+- **ISP** — małe interfejsy. `HttpClient.request()` jedna metoda, nie 5 (get/post/put/patch/delete).
+- **DIP** — zależności na abstrakcje. `defineTool({ handle })` — handler nie wie o transporcie MCP ani konstrukcji ctx.
 
-Jedna funkcja / klasa / moduł ma jeden powód do zmiany.
+## 3. KISS
 
-- `http-client.ts` — wrapper HTTP (retry, dedup, ETag, body cap). Nie
-  parsuje payloads, nie reshape'uje.
-- `field-registry.ts` — discovery + reshape Jira custom fields. Nie woła
-  HTTP.
-- Każdy `server-*.ts` — composition root jednej integracji ALM. Nie
-  trzyma logiki biznesowej.
+Jeśli wymaga wyjaśnienia, jest za skomplikowane. Brak Builder gdy wystarczy literałowy obiekt, brak Factory gdy `new Cls(...)`, brak Observer gdy `await`.
 
-### OCP — Open / Closed
+## 4. YAGNI
 
-Moduły otwarte na rozszerzenia, zamknięte na modyfikacje. Dodanie nowego
-narzędzia w `server-jira.ts` to dodanie `defineTool({...})`, nie edycja
-istniejących handlerów.
+Pierwsza implementacja najprostsza. Druga wymusi refactor — wtedy abstrakcja powstaje z prawdziwym kontekstem.
 
-### LSP — Liskov Substitution
-
-Subklasy / implementacje muszą być wymienne. W praktyce dla tego repo —
-typy `AuthConfig` dla różnych konektorów (Jira, Confluence, Figma, …) są
-discriminated union; konsument (`http-client.ts`) musi obsługiwać każdą
-wariację jednolicie.
-
-### ISP — Interface Segregation
-
-Małe interfejsy zamiast wielkich. `HttpClient` ma jedną metodę
-`request()`. Nie ma `get`, `post`, `put`, `patch`, `delete` jako osobne
-metody — bo wtedy testy musiałyby mockować wszystkie z nich.
-
-### DIP — Dependency Inversion
-
-Zależności na abstrakcje (interface), nie konkrety. `defineTool` przyjmuje
-`handle(input, ctx)` — handler nie wie o transporcie MCP ani o sposobie,
-w jaki ctx został zbudowany.
-
-## 3. KISS — Keep It Simple, Stupid
-
-Jeśli rozwiązanie potrzebuje wyjaśnienia, jest za skomplikowane.
-
-- Brak wzorca _Builder_ tam, gdzie wystarczy obiekt literałowy.
-- Brak _Factory_ tam, gdzie wystarczy `new Cls(...)`.
-- Brak _Observer_ tam, gdzie wystarczy `await`.
-
-## 4. YAGNI — You Aren't Gonna Need It
-
-Nie buduj abstrakcji "na zapas". Pierwsza implementacja jest najprostsza.
-Druga wymusi refactor — i właśnie wtedy abstrakcja powstaje z prawdziwym
-contextem.
-
-- Jedna konfiguracja na początek; multi-tenant gdy faktycznie pojawi się
-  druga.
-- Hard-coded `https://api.figma.com` aż do momentu, gdy ktoś poprosi o
-  Figma Enterprise — wtedy `FIGMA_BASE_URL`.
-- Brak transportu HTTP w MCP serwerach — stdio działa; HTTP gdy ktoś
-  poprosi.
+- Jedna konfiguracja → multi-tenant gdy faktycznie pojawi się druga.
+- Hard-coded `https://api.figma.com` aż do prośby o Figma Enterprise → wtedy `FIGMA_BASE_URL`.
+- stdio działa → HTTP transport gdy ktoś poprosi.
 
 ## 5. Composition over inheritance
 
-Większość problemów daje się rozwiązać kompozycją funkcji / typów /
-obiektów. Dziedziczenie wprowadza tight coupling i daje fragile API.
+Kompozycja funkcji / typów / obiektów. Dziedziczenie = tight coupling + fragile API.
 
-- Konektory to funkcje, nie subklasy abstrakcyjnej `BaseConnector`.
-- Pipeline ekstrakcji (`extract.ts`) komponuje `paginate → reshape →
-budget` — każdy kawałek to osobna funkcja, którą można testować
-  niezależnie.
+- Konektory to funkcje, nie subklasy `BaseConnector`.
+- Pipeline `extract.ts` = `paginate → reshape → budget` (każdy kawałek osobno testable).
 
 ## 6. Fail fast, fail loud
 
-Błędy na granicy, nie głęboko w kodzie.
+Błędy na granicy, nie głęboko.
 
-- Każdy external payload jest walidowany na granicy (Zod). Odrzucaj
-  wcześnie.
-- Nie coerce po cichu `null` na defaulty — ujaw brakujący input.
-- Output modelu AI: schema-bound (Zod) — nigdy nie parse free text na
-  business decisions.
+- External payload → Zod walidacja na granicy. Odrzucaj wcześnie.
+- Brak silent coerce `null` na defaulty — ujawnij brakujący input.
+- AI output → schema-bound (Zod), nigdy free-text parse na business decisions.
 
 ## 7. Convention over configuration
 
-Wybierz konwencję, udokumentuj raz, stosuj wszędzie.
-
-- Nazwy plików: `kebab-case`.
-- Nazwy narzędzi MCP: `<server>.<verb>_<noun>` (`jira.get_issue`,
-  `gitlab.list_mrs`).
+- Pliki: `kebab-case`.
+- Tool naming: `<server>.<verb>_<noun>` (`jira.get_issue`, `gitlab.list_mrs`).
 - Commits: Conventional Commits.
 
-Gdy nowy kontrybutor (człowiek lub AI) pyta "gdzie powinien iść X?",
-odpowiedź powinna już być w `.github/` lub `docs/`.
+Gdy nowy kontrybutor pyta "gdzie X?", odpowiedź już jest w `.github/` lub `docs/`.
 
 ## 8. Reversibility — małe, bezpieczne kroki
 
-Duże zmiany są straszne. Wiele małych zmian to rutyna.
+Duże zmiany straszne. Wiele małych = rutyna.
 
-- Jeden concern na PR. Reviewable w jednym posiedzeniu.
-- ADR dla decyzji trudnych do odwrócenia.
-- `dryRun: true` na narzędziach mutujących pozwala zobaczyć request body
-  przed wykonaniem.
+- Jeden concern per PR.
+- ADR dla trudnych do odwrócenia decyzji.
+- `dryRun: true` na write tools — zobacz request body przed wystrzeleniem.
 
 ## 9. Kod jest czytany więcej niż pisany
 
-Optymalizuj dla następnego czytelnika, nie aktualnego writera.
-
 - Nazwy zamiast komentarzy.
-- Explicit types zamiast inferred na granicach API.
-- Jedno zdanie na linię markdown dla czystych diffów.
+- Explicit types na granicach API (nie inferred).
+- Jedno zdanie per linia markdown (czyste diffy).
 
 ## 10. Wrap external dependencies
 
-Każda zewnętrzna zależność (REST API upstream, SDK, low-level library)
-musi żyć za wrapperem w `src/shared/`, **nie być importowana bezpośrednio
-z serwera ani konektora**.
+Każda external zależność (REST upstream, SDK, low-level lib) **musi żyć za wrapperem** w `src/shared/`, nigdy importowana bezpośrednio z serwera / konektora.
 
-**Patterns ✅:**
+✅ `await http.request<JiraIssueRaw>({ path: '/rest/api/3/issue/...' })` — jeden HttpClient cross-konektor.
+✅ Reshape przez `reshapeJiraIssue(...)` / `fieldRegistry`, nigdy raw `customfield_NNNNN`.
+✅ Handler woła connector function, nie surowy `fetch`.
 
-- `await http.request<JiraIssueRaw>({ path: '/rest/api/3/issue/...' })` —
-  jeden HttpClient cross-konektor.
-- Reshape + walidacja przez `reshapeJiraIssue(...)` / `fieldRegistry`
-  zamiast bezpośredniego dotykania `raw.fields.customfield_NNNNN`.
-- Handler narzędzia woła connector function, nie surowy `fetch` —
-  connector pamięta o limitach, retries, dedup.
-
-**Wyjątki** (≤ 1 plik dotykający bibliotekę):
-
-- Owner pliku samego wrappera (`src/shared/http-client.ts`,
-  `src/shared/log.ts`) — może importować low-level API.
-- Stricte testowy spec dla adaptera (`*.spec.ts` obok) — może referować
-  biblioteki do mockowania.
+**Wyjątki** (≤ 1 plik per low-level API): owner wrappera (`http-client.ts`, `log.ts`) + jego spec test.
 
 ## Jak agenci to stosują
 
-Każdy agent ładuje ten plik na początku zadania. Gdy dwa konkurujące
-podejścia spełniają immediate spec, agent wybiera to bliższe tym zasadom
-i notuje trade-off w swoim hand-off bloku. Code reviewer cytuje **id
-zasady** (np. _SRP_, _KISS_) przy odrzucaniu — nie mgliste "to wygląda
-źle".
+Każdy agent ładuje ten plik na początku zadania. Gdy dwa podejścia spełniają spec, agent wybiera bliższe zasadom i notuje trade-off w hand-off bloku. Code reviewer cytuje **id zasady** (`SRP`, `KISS`) przy odrzucaniu — nie mgliste "wygląda źle".
 
-## Czym te NIE są
+## Czym to NIE jest
 
 - **Nie checklistą.** PR nie musi demonstrować każdej zasady.
-- **Nie przykazaniami.** Realny kod czasem narusza zasadę ze zmierzonego
-  powodu. Udokumentuj powód.
-- **Nie substytutem dla reguł zakresowych.** Reguły z
-  `.github/instructions/{security,mcp-server,connectors,tokens}.instructions.md`
-  nadal obowiązują.
+- **Nie przykazaniami.** Realny kod czasem narusza ze zmierzonego powodu — udokumentuj.
+- **Nie substytutem dla reguł zakresowych** w `.github/instructions/{security,mcp-server,connectors,tokens}.instructions.md`.
 
 ## Zobacz też
 
-- [`core.instructions.md`](core.instructions.md) — nienegocjowalne
-  cross-cutting reguły.
-- [`security.instructions.md`](security.instructions.md) — reguły
-  bezpieczeństwa.
-- [`llm-optimization.instructions.md`](llm-optimization.instructions.md)
-  — oszczędność tokenów + deterministyczne skrypty.
-- [`mcp-server.instructions.md`](mcp-server.instructions.md) —
-  konwencje serwera MCP.
-- [`connectors.instructions.md`](connectors.instructions.md) — kontrakt
-  konektora.
+[`core.instructions.md`](core.instructions.md) · [`security.instructions.md`](security.instructions.md) · [`llm-optimization.instructions.md`](llm-optimization.instructions.md) · [`mcp-server.instructions.md`](mcp-server.instructions.md) · [`connectors.instructions.md`](connectors.instructions.md)

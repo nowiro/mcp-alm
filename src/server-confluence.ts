@@ -30,6 +30,7 @@ import { definePrompt, type PromptDefinition } from './shared/prompt.js';
 import { defineMarkdownResource, type ResourceDefinition } from './shared/resource.js';
 import { cursorAdapter } from './shared/pagination.js';
 import { adfToMarkdown, type AdfNode } from './shared/adf.js';
+import { markdownToAdf } from './shared/markdown-to-adf.js';
 import { assertWriteAllowed, isWriteEnabled } from './shared/write-guard.js';
 
 const SERVER_NAME = 'mcp-confluence';
@@ -409,33 +410,6 @@ if (isWriteEnabled()) {
       },
     }),
   );
-}
-
-/**
- * AC54: Minimalistyczny Markdown → ADF wrapper. Splittuje body na bloczki po
- * pustych liniach (`\n\n`), każdy bloczek staje się ADF `paragraph` z text node.
- *
- * Co działa (basic):
- *   - paragrafy oddzielone pustymi liniami
- *   - text inline (bez bold / italic / link inline)
- *
- * Co NIE działa (TODO follow-up gdy realna potrzeba):
- *   - heading, bullet list, numbered list, fenced code block
- *   - inline formatting (bold, italic, link)
- *   - tables, panels, mentions
- *
- * Dla bardziej zaawansowanego MD agent powinien dostarczyć surowy ADF JSON
- * jako przyszły parametr `bodyAdf?`. Ten wrapper covers 80% basic use cases.
- * @param markdown Markdown source string.
- * @returns ADF document.
- */
-function markdownToAdf(markdown: string): { readonly type: 'doc'; readonly version: 1; readonly content: AdfNode[] } {
-  const blocks = markdown.split(/\n\s*\n/).filter((b) => b.trim().length > 0);
-  const content: AdfNode[] = blocks.map((block) => ({
-    type: 'paragraph',
-    content: [{ type: 'text', text: block.trim() }],
-  }));
-  return { type: 'doc', version: 1, content };
 }
 
 // ── prompts ────────────────────────────────────────────────────────────────

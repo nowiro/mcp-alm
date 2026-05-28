@@ -97,6 +97,7 @@ security_review:
 - **Nie wprowadza zmian** w kodzie. To audit, nie fix.
 - **Nie audytuje upstream APIs** (Jira, GitLab itd.). Zaufanie kończy się na `http-client.ts` body cap.
 - **Nie testuje exploitów na żywym systemie.** Static analysis only.
+- **Nie zapisuje findings do Copilot Memory.** Copilot Memory (od 2026-05-26) cache'uje notes per-scope. Security findings często zawierają konkretne tokens / API keys / project keys — to PII-class data, której nie chcemy w persistent memory store. Jeśli używasz `/memory show` w Copilot CLI, zweryfikuj że żadne finding z tego audytu tam nie wpadło. Findings logujemy tylko w git-tracked plikach z konkretnym retention plan.
 
 ## Cross-check
 

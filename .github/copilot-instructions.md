@@ -15,9 +15,10 @@ integracja ALM:
 - `mcp-sonar` — SonarQube / SonarCloud
 - `mcp-gitlab` — GitLab SaaS + self-hosted
 
-Główny klient to **GitHub Copilot** w **VS Code ≥ 1.121** i **IntelliJ IDEA
-≥ 2026.1.2**. Inne MCP-zgodne hosty (Claude Desktop, Cursor, własny kod
-Agent SDK) też działają — nie wstawiaj założeń IDE-specific do runtime'u.
+Główny klient to **GitHub Copilot** w **VS Code ≥ 1.121**, **IntelliJ IDEA
+≥ 2026.1.2** i **Eclipse** (plugin Copilot open-sourced 2026-05-21). Inne
+MCP-zgodne hosty (Claude Desktop, Cursor, własny kod Agent SDK) też działają
+— nie wstawiaj założeń IDE-specific do runtime'u.
 
 ## Preferencje językowe
 

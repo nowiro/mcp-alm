@@ -16,7 +16,7 @@ Pracujesz wewnątrz **mcp-alm** — projektu TypeScript / Node 22, który shipuj
 - `mcp-sonar` — SonarQube / SonarCloud
 - `mcp-gitlab` — GitLab SaaS + self-hosted
 
-Główny klient: **GitHub Copilot** w **VS Code ≥ 1.121** i **IntelliJ IDEA ≥ 2026.1.2**. Inne MCP-zgodne hosty (Claude Desktop, Cursor, własny Agent SDK) też działają — nie wstawiaj założeń IDE-specific do runtime'u.
+Główny klient: **GitHub Copilot** w **VS Code ≥ 1.121**, **IntelliJ IDEA ≥ 2026.1.2** i **Eclipse** (plugin Copilot open-sourced 2026-05-21). Inne MCP-zgodne hosty (Claude Desktop, Cursor, własny Agent SDK) też działają — nie wstawiaj założeń IDE-specific do runtime'u.
 
 **Cross-platform**: działa na Windows i macOS/Linux identycznie. User-profile config żyje w `<home>/.config/mcp-alm/config.json` gdzie `<home>` to `%USERPROFILE%` na Windows i `$HOME` na POSIX (`os.homedir()`).
 

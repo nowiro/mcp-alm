@@ -4,7 +4,7 @@
 [![codeql](https://github.com/nowiro/mcp-alm/actions/workflows/codeql.yml/badge.svg)](https://github.com/nowiro/mcp-alm/actions/workflows/codeql.yml)
 [![gitleaks](https://github.com/nowiro/mcp-alm/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/nowiro/mcp-alm/actions/workflows/gitleaks.yml)
 [![role](https://img.shields.io/badge/role-MCP%20servers-blue)](#)
-[![ide](https://img.shields.io/badge/IDE-VS%20Code%201.121%2B%20%C2%B7%20IntelliJ%202026.1.2%2B-2da44e)](#konfiguracja-ide)
+[![ide](https://img.shields.io/badge/IDE-VS%20Code%201.121%2B%20%C2%B7%20IntelliJ%202026.1.2%2B%20%C2%B7%20Eclipse-2da44e)](#konfiguracja-ide)
 [![ai](https://img.shields.io/badge/AI-GitHub%20Copilot-2da44e)](#)
 [![os](https://img.shields.io/badge/OS-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-blue)](#)
 [![license](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
@@ -12,10 +12,10 @@
 Pięć serwerów MCP — **read-first, write-guarded** — które wystawiają Twoje
 osobiste tokeny API do Jira, Confluence, Figma, SonarQube i GitLab jako
 narzędzia (`tools`) odkrywalne dla dowolnego klienta MCP. Projekt celuje w
-**GitHub Copilot** w **VS Code ≥ 1.121** oraz **IntelliJ IDEA ≥ 2026.1.2**,
-ale jest zgodny ze specyfikacją [Model Context
-Protocol](https://modelcontextprotocol.io), więc każdy zgodny host (Claude
-Desktop, Cursor, własny agent) też działa.
+**GitHub Copilot** w **VS Code ≥ 1.121**, **IntelliJ IDEA ≥ 2026.1.2** oraz
+**Eclipse** (plugin Copilot dla Eclipse open-sourced 2026-05-21), ale jest
+zgodny ze specyfikacją [Model Context Protocol](https://modelcontextprotocol.io),
+więc każdy zgodny host (Claude Desktop, Cursor, własny agent) też działa.
 
 ## Po co to istnieje
 
@@ -357,15 +357,16 @@ docs/                                              # dokumentacja w stylu Diáta
 
 ## Kompatybilność
 
-| Komponent      | Minimum przetestowane        | Uwagi                                                                           |
-| -------------- | ---------------------------- | ------------------------------------------------------------------------------- |
-| Node.js        | 22.0.0                       | Natywne `fetch`, `AbortSignal.any`, `crypto.timingSafeEqual` — wszystko od 22+. |
-| npm            | 10.0.0                       | Dostarczany z Node 22. `package-lock.json` jest committed.                      |
-| VS Code        | 1.121                        | Natywne wsparcie MCP (od 1.99) z UI per-tool approval.                          |
-| IntelliJ IDEA  | 2026.1.2                     | AI Assistant + plugin GitHub Copilot — oba wspierają MCP od tej wersji.         |
-| GitHub Copilot | najnowszy (2026-05+)         | Chat + slash commands + MCP tool calling.                                       |
-| API Atlassiana | Jira Cloud + Data Center 9.x | `search/jql` cursor pagination (post-2025-05).                                  |
-| API GitLaba    | 16.x+ (self-hosted) i SaaS   | tylko `/api/v4`.                                                                |
+| Komponent      | Minimum przetestowane        | Uwagi                                                                            |
+| -------------- | ---------------------------- | -------------------------------------------------------------------------------- |
+| Node.js        | 22.0.0                       | Natywne `fetch`, `AbortSignal.any`, `crypto.timingSafeEqual` — wszystko od 22+.  |
+| npm            | 10.0.0                       | Dostarczany z Node 22. `package-lock.json` jest committed.                       |
+| VS Code        | 1.121                        | Natywne wsparcie MCP (od 1.99) z UI per-tool approval.                           |
+| IntelliJ IDEA  | 2026.1.2                     | AI Assistant + plugin GitHub Copilot — oba wspierają MCP od tej wersji.          |
+| Eclipse        | plugin Copilot (od 2026-05)  | Plugin Copilot for Eclipse open-sourced 2026-05-21; MCP klient via Copilot Chat. |
+| GitHub Copilot | najnowszy (2026-05+)         | Chat + slash commands + MCP tool calling.                                        |
+| API Atlassiana | Jira Cloud + Data Center 9.x | `search/jql` cursor pagination (post-2025-05).                                   |
+| API GitLaba    | 16.x+ (self-hosted) i SaaS   | tylko `/api/v4`.                                                                 |
 
 ## Bezpieczeństwo
 

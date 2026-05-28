@@ -6,7 +6,7 @@
   "description": "MCP servers for ALM tools (Jira, Confluence, Figma, SonarQube, GitLab). Read-first, write-guarded. Works with GitHub Copilot in VS Code >= 1.121 and IntelliJ IDEA >= 2026.1.2.",
   "license": "MIT",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.22.1"
   },
   "bin": {
     "mcp-jira": "./dist/server-jira.js",
@@ -65,7 +65,7 @@
     "eslint-plugin-promise": "7.3.0",
     "eslint-plugin-security": "4.0.0",
     "husky": "9.1.7",
-    "lint-staged": "16.4.0",
+    "lint-staged": "17.0.5",
     "prettier": "3.8.3",
     "typescript": "6.0.3",
     "typescript-eslint": "8.60.0",

@@ -124,6 +124,12 @@ zarezerwowany dla transportu MCP):
 Bez PII, bez fragmentów tokenów, bez pełnych body odpowiedzi upstream —
 tylko klucze, które schema deklaruje.
 
+`correlationId` przychodzi z inbound `req.params._meta?.correlationId`
+(np. Copilot CLI `preMcpToolCall` hook może wstrzyknąć trace ID z
+external observability). Fallback: ULID generated server-side. End-to-end:
+inbound `_meta` → log → ledger → outbound `_meta` → outbound `X-Request-ID`
+header. Patrz [`docs/explanation/observability.md`](../../docs/explanation/observability.md) §4.1.
+
 ## 7. Zabronione
 
 - ❌ Hard-coded credentials gdziekolwiek — nawet w testach. Mockuj env w

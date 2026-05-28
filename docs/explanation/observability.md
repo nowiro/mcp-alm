@@ -135,6 +135,43 @@ Każdy response z każdego narzędzia jest opakowany:
 ("za drogo, zwęź `fields`") albo `truncated` ("muszę zawołać z next
 cursor") **bez** dodatkowej rundy do serwera.
 
+### 4.1 Inbound `_meta` propagation (Copilot CLI `preMcpToolCall` hook)
+
+`_meta` jest dwukierunkowe. **Outbound** (server → host) opisałem powyżej.
+**Inbound** (host → server) przylatuje w `req.params._meta` przy każdym
+`tools/call`. Nasza implementacja w `src/shared/correlation.ts` (mcp-devtools)
+i analogiczny `correlationIdFromMeta` w `mcp-server.ts` (mcp-alm) wyciąga
+`correlationId` z inbound `_meta` — jeśli host go tam wstawił, propagujemy
+go end-to-end do response `_meta`, logu na stderr, ledgera, oraz outbound
+header `X-Request-ID`.
+
+Najnowsza powierzchnia integracji to **Copilot CLI `preMcpToolCall` hook**
+(maj 2026), który pozwala hostowi modyfikować inbound `_meta` przed
+wysłaniem `tools/call`. Przykład w TypeScript:
+
+```ts
+// Po stronie hosta (Copilot CLI SDK)
+session.hooks.onPreMcpToolCall = async (input) => {
+  return {
+    metaToUse: {
+      traceId: myTraceId(), // ID z zewnętrznego systemu observability
+      correlationId: myTraceId(), // mcp-alm uzna to za canonical ID
+    },
+  };
+};
+```
+
+Po naszej stronie nic nie zmienia się — serwer już respektuje
+`req.params._meta?.correlationId` jako preferowany ID (fallback: ULID
+generated server-side). Hook tri-state (`null` = unchanged, object =
+replace, `metaToUse: null` = strip) pozwala host'owi:
+
+- **Wstrzyknąć** trace ID z OpenTelemetry / Datadog / Sentry → end-to-end
+  tracing przez MCP boundary.
+- **Zastąpić** ID dla audyt log compliance.
+- **Wyściubic** `_meta` całkiem → privacy mode (mcp-alm wtedy generuje
+  fresh ULID per call).
+
 ## 5. Outbound headers
 
 Każdy fetch do upstreamu niesie identyfikujące nagłówki:

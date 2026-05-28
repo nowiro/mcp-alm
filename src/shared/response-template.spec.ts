@@ -115,6 +115,26 @@ describe('templateResponse', () => {
     const result = templateResponse('mirror', {}, { correlationId: 'c', server: 's', tool: 't' }, { structured: true });
     expect(result.data).toEqual({ structured: true });
   });
+
+  it('auto-injects _meta into the template scope (spec-kit context.run_id analog)', () => {
+    write('with-meta', '---\nid: wm\n---\ncid={{ _meta.correlationId }} srv={{ _meta.server }} tool={{ _meta.tool }}');
+    const result = templateResponse(
+      'with-meta',
+      {},
+      { correlationId: 'abc123', server: 'mcp-jira', tool: 'jira.get_issue' },
+    );
+    expect(result.data).toBe('cid=abc123 srv=mcp-jira tool=jira.get_issue');
+  });
+
+  it('user-supplied _meta in variables overrides auto-injection (escape hatch)', () => {
+    write('override-meta', '---\nid: om\n---\ncid={{ _meta.correlationId }}');
+    const result = templateResponse(
+      'override-meta',
+      { _meta: { correlationId: 'user-wins' } },
+      { correlationId: 'auto-loses', server: 's', tool: 't' },
+    );
+    expect(result.data).toBe('cid=user-wins');
+  });
 });
 
 describe('determinism', () => {

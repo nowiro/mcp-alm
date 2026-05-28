@@ -153,6 +153,13 @@ export function renderTemplate(name: string, variables: Record<string, unknown>)
 /**
  * Build the canonical response envelope using a template for the data shape.
  *
+ * Auto-injects `_meta` into the template scope (mirrors `github/spec-kit`'s
+ * `{{ context.run_id }}` pattern), so templates can reference
+ * `{{ _meta.correlationId }}`, `{{ _meta.server }}`, `{{ _meta.tool }}`
+ * without the caller having to thread them through `variables`. If the
+ * caller explicitly sets `_meta` in `variables`, the user-supplied value
+ * wins (caller-controls escape hatch).
+ *
  * NOTE: returns `data` as the rendered markdown string. Callers that need
  * structured data alongside the rendered view should set `dataOverride` and
  * use the template only for the human-readable mirror.
@@ -170,7 +177,8 @@ export function templateResponse<T = string>(
   },
   dataOverride?: T,
 ): ToolResponse<T | string> {
-  const rendered = renderTemplate(name, variables);
+  const scope = { _meta: metaInput, ...variables };
+  const rendered = renderTemplate(name, scope);
   const data = (dataOverride ?? rendered) as T | string;
   return wrapResponse(data, buildMeta(data, metaInput));
 }

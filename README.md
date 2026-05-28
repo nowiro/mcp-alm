@@ -1,8 +1,5 @@
 # mcp-alm
 
-[![ci](https://github.com/nowiro/mcp-alm/actions/workflows/ci.yml/badge.svg)](https://github.com/nowiro/mcp-alm/actions/workflows/ci.yml)
-[![codeql](https://github.com/nowiro/mcp-alm/actions/workflows/codeql.yml/badge.svg)](https://github.com/nowiro/mcp-alm/actions/workflows/codeql.yml)
-[![gitleaks](https://github.com/nowiro/mcp-alm/actions/workflows/gitleaks.yml/badge.svg)](https://github.com/nowiro/mcp-alm/actions/workflows/gitleaks.yml)
 [![role](https://img.shields.io/badge/role-MCP%20servers-blue)](#)
 [![ide](https://img.shields.io/badge/IDE-VS%20Code%201.121%2B%20%C2%B7%20IntelliJ%202026.1.2%2B%20%C2%B7%20Eclipse-2da44e)](#konfiguracja-ide)
 [![ai](https://img.shields.io/badge/AI-GitHub%20Copilot-2da44e)](#)
@@ -311,7 +308,7 @@ Z poziomu Copilot Chat (przy aktywnym `mcp-jira` z `.vscode/mcp.json`):
 
 Pełna tabela narzędzi z parametrami: `docs/reference/tools.md` (generowana przez `npm run docs:tools`).
 
-**Write tools** są gated przez `MCP_WRITE_ENABLED=true` env i wrappują `assertWriteAllowed(toolName)` — patrz [`docs/how-to/enable-writes.md`](docs/how-to/enable-writes.md).
+**Write tools** są gated przez `MCP_WRITE_ENABLED=true` env i wrappują `assertWriteAllowed(toolName)` — patrz [`docs/explanation/write-guard.md`](docs/explanation/write-guard.md) (pełna polityka tier 1/2/3) oraz [`ADR-0003`](docs/adr/0003-write-guard-runtime.md).
 
 ## Architektura w jednym akapicie
 
@@ -342,7 +339,9 @@ docs/                                              # dokumentacja w stylu Diáta
   adr/                                             # Architecture Decision Records
 .vscode/mcp.json                                   # natywna rejestracja MCP dla VS Code
 .idea/mcp-servers.example.xml                      # szablon importu dla IntelliJ AI Assistant
-.github/workflows/                                 # CI: lint, typecheck, test, build, audit, secret-scan
+.github/instructions/                              # auto-applied Copilot rules per applyTo glob
+.github/agents/                                    # custom chat modes (orchestrator, connector-author, ...)
+.github/prompts/                                   # slash-commands (/release, /add-tool, /security-review, ...)
 ```
 
 ## Dokumentacja

@@ -216,25 +216,38 @@ propaguje się do snapshotów też. Szczegóły:
 
 ## Agenci Copilot — kiedy i jak używać
 
-Repo wprowadza **pięć custom agents** w [`.github/agents/`](.github/agents/), które Copilot wykrywa automatycznie w VS Code (≥ 1.121) jako custom chat modes do wyboru z dropdownu nad polem czatu. Każdy agent ma wąską specjalizację — wybierz pasującego do typu zadania.
-
-| Agent                                                                  | Kiedy używać                                                                                 | Przykładowy prompt                                                                                                                      |
-| ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| [`orchestrator`](.github/agents/orchestrator.agent.md)                 | Wieloetapowe zadania, plan-first, koordynacja innych specjalistów                            | "Zaplanuj migrację Jira PAT → OAuth2 we wszystkich connectorach"                                                                        |
-| [`connector-author`](.github/agents/connector-author.agent.md)         | Implementacja / refactor konektora (jira, confluence, figma, sonar, gitlab)                  | "Dodaj `jira.get_sprint` z parametrami `boardId`, `state`, zwraca canonical sprint shape"                                               |
-| [`epic-strategist`](.github/agents/epic-strategist.agent.md)           | Jira epic breakdown na stories per INVEST, dependency mapping, sprint cuts                   | "Rozbij epic PROJ-100 na stories per INVEST, oszacuj T-shirt sizes, zaproponuj cut na 3 sprinty"                                        |
-| [`confluence-architect`](.github/agents/confluence-architect.agent.md) | Information architecture dla Confluence space, page templates, hierarchy plans               | "Audyt space ENG i zaproponuj target tree z lifecycle markers + migration plan z rollback"                                              |
-| [`token-tuner`](.github/agents/token-tuner.agent.md)                   | Audyt P50/P95 zużycia tokenów per tool, rekomendacje `budgetTokens` / `fields` / `maxChars`  | "Pull session-tracker dla każdego serwera, policz P95, zaproponuj nowe defaulty w osobnym PR (nie w tym samym co audit)"                |
-| [`template-author`](.github/agents/template-author.agent.md)           | Owns `templates/responses/` — LLM-agnostic output shape + semver bumps przy breaking changes | "Dodaj template `jira-changelog` (changelog entries z timestamps i actorami), bumpnij confluence-page do v1.1 z attachments thumbnails" |
-| [`test-engineer`](.github/agents/test-engineer.agent.md)               | Coverage ≥ 80%, msw mocks, integration testy gated by sandbox tokens, pin error contract     | "Dodaj testy dla `jira.bulk_create_issues`: happy path z 5 issues, 4xx partial fail (3/5 created), 5xx, dry-run, write-guard denial"    |
-| [`dependency-curator`](.github/agents/dependency-curator.agent.md)     | Każda nowa npm dep wymaga ADR, audit prod-deps, lockfile hygiene, supply-chain guard         | "Czy `p-queue` jest sensowną alternatywą do własnego rate-limitera dla jira-client? Napisz ADR z transitive size + license check"       |
+Repo wystawia **jeden widoczny custom chat mode** w VS Code Copilot — `orchestrator`. Routuje on do siedmiu wewnętrznych personas (connector-author, epic-strategist, confluence-architect, token-tuner, template-author, test-engineer, dependency-curator) które nie pojawiają się w mode pickerze. **Świadoma decyzja: prostsze UX** — nie musisz wybierać agenta, tylko opisać zadanie. Orchestrator wybiera eksperta, ładuje jego personę z [`.github/agents/<role>.agent.md`](.github/agents/) jako system prompt, planuje, deleguje, bramkuje DoD.
 
 **Workflow w VS Code:**
 
 1. Otwórz Copilot Chat (`Ctrl+Alt+I` lub `Cmd+Ctrl+I`).
-2. Z dropdownu trybu chatu (góra okna) wybierz np. `connector-author`.
-3. Wpisz zadanie — Copilot załaduje plik `.github/agents/<name>.agent.md` jako system prompt i odpowie zgodnie z workflow specjalisty.
-4. Pozostałe hosty MCP (Claude Desktop, Cursor, własny SDK) czytają agents jako fallback w `AGENTS.md` + `.github/copilot-instructions.md`.
+2. Z dropdownu trybu wybierz `orchestrator`.
+3. Opisz zadanie — np. _"Dodaj `jira.get_sprint` z parametrami `boardId`, `state`, zwraca canonical sprint shape"_ albo _"Rozbij epic PROJ-100 na stories per INVEST z cut na 3 sprinty"_.
+4. Orchestrator dobiera personę (`connector-author` lub `epic-strategist` w przykładach powyżej), pisze plan, deleguje, walidacja przez DoD gate.
+
+Pełna mapa personas + decision tree: [`AGENTS.md`](AGENTS.md) i [`.github/chatmodes/orchestrator.chatmode.md`](.github/chatmodes/orchestrator.chatmode.md).
+
+**Przykładowy flow dla "redesign Confluence space ENG":**
+
+```
+orchestrator → extract:confluence --space=ENG
+            → confluence-architect (current → target tree + migration plan)
+            → connector-author (bulk-move pages, dryRun first)
+            → test-engineer (regression suite na bulk operations)
+```
+
+### Power-user shortcuts (direct paths, omijają orchestratora)
+
+Slash-commands z [`.github/prompts/`](.github/prompts/) uruchamiają konkretną ścieżkę bez routingu przez orchestrator:
+
+| Slash command      | Co robi                                      |
+| ------------------ | -------------------------------------------- |
+| `/add-tool`        | dodaj narzędzie w istniejącym connectorze    |
+| `/new-connector`   | scaffolding nowego konektora ALM             |
+| `/release`         | release flow (bump wersji + CHANGELOG + tag) |
+| `/security-review` | security audit bieżącego diffu               |
+
+Inne hosty MCP (Claude Desktop, Cursor, custom Agent SDK) czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback gdy nie wspierają custom chat modes.
 
 ## MCP Prompts — preconfigured slash-commands
 

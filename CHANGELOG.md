@@ -9,6 +9,7 @@ projekt stosuje [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`.github/chatmodes/orchestrator.chatmode.md`** — jedyny widoczny custom chat mode w VS Code Copilot picker. Routuje high-level zadania do siedmiu wewnętrznych personas (connector-author, epic-strategist, confluence-architect, token-tuner, template-author, test-engineer, dependency-curator) które są teraz ładowane z `.github/agents/` jako system-prompt-w-locie, bez eksponowania w UI pickerze. Świadoma decyzja: prostsze UX dla użytkownika końcowego.
 - **`.github/workflows/release.yml`** — workflow publikujący `@nowiro/mcp-alm` na npm registry przy push tagów `v*`. Uses `npm publish --provenance --access public` (SLSA-3-grade attestation). Pre-flight: repo owner ustawia secret `NPM_TOKEN` (Automation token scoped do `@nowiro` org).
 - **`README.md`** — sekcja "Uruchomienie bez klonowania (npx)" pokazująca `mcp.json` snippet z `npx -y -p @nowiro/mcp-alm <bin>` dla VS Code Copilot Chat oraz Claude Desktop / Cursor. Bez `git clone`, bez `npm install`, bez `npm run build` po stronie usera.
 - **MCP Resources** (`resources/list` + `resources/read`) — każdy z 5 serwerów eksponuje read-only docs ładowane przez Copilot jako deterministyczny kontekst. URIs: `mcp-jira://docs/{jql-cheatsheet,custom-fields-guide}`, `mcp-confluence://docs/cql-cheatsheet`, `mcp-gitlab://docs/pipeline-patterns`, `mcp-sonar://docs/severity-guide`, `mcp-figma://docs/design-tokens-spec`. Token saving: cheatsheet ładowany raz, cache'owany przez Copilot Chat — bez halucynacji JQL/CQL syntax.
@@ -16,8 +17,14 @@ projekt stosuje [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`templates/resources/`** — 6 markdown źródeł: `jira-jql-cheatsheet.md`, `jira-custom-fields-guide.md`, `confluence-cql-cheatsheet.md`, `gitlab-pipeline-patterns.md`, `sonar-severity-guide.md`, `figma-design-tokens-spec.md`. Edytowalne bez restartu Copilota.
 - **`README.md`** — sekcja "MCP Resources — preconfigured docs context" z tabelą URI + wzorcem użycia w VS Code Copilot Chat.
 
+### Removed
+
+- **`.github/agents/orchestrator.agent.md`** — treść przeniesiona do `.github/chatmodes/orchestrator.chatmode.md` (jedyne źródło prawdy dla orchestrator persona). Pozostałe pliki `.github/agents/*.agent.md` żyją dalej jako wewnętrzne persony ładowane przez orchestrator.
+
 ### Changed
 
+- **`AGENTS.md`** — sekcja "Custom agents (VS Code Copilot)" → "Custom chat modes (VS Code Copilot)" z tabelą rozdzieloną na **Widoczne w mode picker** (1 wiersz: orchestrator) i **Wewnętrzne persony** (7 wierszy: specjaliści ładowani przez orchestrator). Dodana sekcja "Power-user shortcuts" linkująca do `.github/prompts/`.
+- **`README.md`** — sekcja "Agenci Copilot — kiedy i jak używać" przerobiona pod single-orchestrator pattern: jeden tryb w pickerze + decision tree + przykładowy flow + tabela slash-commands jako direct paths dla power userów.
 - **`package.json`** — pakiet przygotowany do publikacji na npm:
   - `name` → `@nowiro/mcp-alm` (scoped),
   - usunięte `"private": true`,

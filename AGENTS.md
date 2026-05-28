@@ -35,11 +35,20 @@ Pełen rulebook → [`.github/copilot-instructions.md`](.github/copilot-instruct
 7. **DoD = `npm run verify`** (format + lint + typecheck + test + build + ai:validate).
 8. **Conventional Commits** — husky commit-msg + commitlint enforce.
 
-## Custom agents (VS Code Copilot)
+## Custom chat modes (VS Code Copilot)
 
-| Mode                                                                   | Kiedy używać                                   |
+**Jeden widoczny tryb.** Repo wystawia tylko jeden custom chat mode w mode picker Copilota — `orchestrator`. Routuje on do wewnętrznych personas które nie pojawiają się w pickerze (świadoma decyzja: prostsze UX dla użytkownika końcowego).
+
+### Widoczne w mode picker
+
+| Mode                                                         | Kiedy używać                                                               |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| [`orchestrator`](.github/chatmodes/orchestrator.chatmode.md) | każde high-level zadanie — multi-step, plan-first, routing do specjalistów |
+
+### Wewnętrzne persony (ładowane przez orchestrator, nie pojawiają się w pickerze)
+
+| Persona                                                                | Kiedy orchestrator je ładuje                   |
 | ---------------------------------------------------------------------- | ---------------------------------------------- |
-| [`orchestrator`](.github/agents/orchestrator.agent.md)                 | multi-step, plan-first, koordynacja            |
 | [`connector-author`](.github/agents/connector-author.agent.md)         | implementacja / refactor konektora             |
 | [`epic-strategist`](.github/agents/epic-strategist.agent.md)           | Jira epic breakdown, INVEST, sprint cuts       |
 | [`confluence-architect`](.github/agents/confluence-architect.agent.md) | IA dla Confluence space, page templates        |
@@ -48,7 +57,11 @@ Pełen rulebook → [`.github/copilot-instructions.md`](.github/copilot-instruct
 | [`test-engineer`](.github/agents/test-engineer.agent.md)               | coverage ≥ 80%, msw mocks, deterministic specs |
 | [`dependency-curator`](.github/agents/dependency-curator.agent.md)     | audit prod-deps, lockfile hygiene              |
 
-VS Code wymaga `chat.modeFilesLocations` w [`.vscode/settings.json`](.vscode/settings.json). Inne hosty MCP czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback.
+### Power-user shortcuts
+
+Slash-commands w [`.github/prompts/`](.github/prompts/) (`/add-tool`, `/new-connector`, `/release`, `/security-review`) uruchamiają konkretną ścieżkę bez przechodzenia przez orchestratora — dla power userów którzy wiedzą co chcą.
+
+VS Code wymaga `chat.modeFilesLocations` w [`.vscode/settings.json`](.vscode/settings.json) (chatmodes są discoverable automatycznie z `.github/chatmodes/`). Inne hosty MCP czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback.
 
 ## Gdzie idzie nowa praca
 

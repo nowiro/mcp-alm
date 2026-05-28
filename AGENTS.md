@@ -10,6 +10,18 @@ Klient: **GitHub Copilot** w VS Code ≥ 1.121, IntelliJ ≥ 2026.1.2, Eclipse (
 
 **Cross-platform**: Windows + macOS / Linux identycznie. Config w `<home>/.config/mcp-alm/config.json` (`os.homedir()`).
 
+## Konfiguracja repo (dla kogoś modyfikującego ten kod)
+
+**Single AI host: GitHub Copilot.** Repo NIE utrzymuje konfiguracji pod Claude Code / Cursor / inne narzędzia developerskie. Świadomie brak:
+
+- `CLAUDE.md` (instrukcje dla Claude Code)
+- `.claude/` (workspace Claude Code: agents, commands, hooks, skills, settings)
+- `.ai/` (kanoniczna wiedza AI — rules, agents, workflows, prompts)
+
+Single source of truth dla agentów: ten `AGENTS.md` + [`.github/copilot-instructions.md`](.github/copilot-instructions.md) + [`.github/instructions/`](.github/instructions/) + [`.github/prompts/`](.github/prompts/) + [`.github/chatmodes/`](.github/chatmodes/).
+
+> Uwaga: inne MCP hosty (Claude Desktop, Cursor, custom Agent SDK) mogą **konsumować** uruchomione serwery MCP zgodnie ze standardem MCP — to inna sprawa niż konfiguracja dewelopmentu kodu repo.
+
 ## Reguły (skrót dla agentów spoza Copilot)
 
 Pełen rulebook → [`.github/copilot-instructions.md`](.github/copilot-instructions.md).

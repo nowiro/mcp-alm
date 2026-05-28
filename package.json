@@ -8,6 +8,7 @@
   "engines": {
     "node": ">=22.22.1"
   },
+  "packageManager": "npm@11.16.0",
   "bin": {
     "mcp-jira": "./dist/server-jira.js",
     "mcp-confluence": "./dist/server-confluence.js",

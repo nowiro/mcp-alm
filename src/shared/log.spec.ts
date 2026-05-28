@@ -45,7 +45,9 @@ describe('log.createLogger', () => {
   });
 
   function firstLine(): CapturedLine {
-    return capture.lines[0];
+    const line = capture.lines[0];
+    if (!line) throw new Error('expected at least one captured log line');
+    return line;
   }
 
   it('embeds server, version, and ts in every line', () => {

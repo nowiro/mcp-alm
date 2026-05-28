@@ -13,7 +13,8 @@ describe('ExtractConfig (Confluence)', () => {
       snapshots: [{ name: 'charter', type: 'page', pageId: '12345' }],
     });
     expect(parsed.outputDir).toBe('./output/confluence');
-    const snap = parsed.snapshots[0];
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
     if (snap.type !== 'page') throw new Error(`expected page, got ${snap.type}`);
     expect(snap.pageId).toBe('12345');
     expect(snap.render).toEqual(['json', 'markdown']);
@@ -23,7 +24,8 @@ describe('ExtractConfig (Confluence)', () => {
     const parsed = ExtractConfig.parse({
       snapshots: [{ name: 'tree', type: 'tree', rootPageId: '999' }],
     });
-    const snap = parsed.snapshots[0];
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
     if (snap.type !== 'tree') throw new Error(`expected tree, got ${snap.type}`);
     expect(snap.depth).toBe(3);
     expect(snap.maxPages).toBe(500);
@@ -33,7 +35,8 @@ describe('ExtractConfig (Confluence)', () => {
     const parsed = ExtractConfig.parse({
       snapshots: [{ name: 'rfcs', type: 'label', label: 'rfc', space: 'ENG' }],
     });
-    const snap = parsed.snapshots[0];
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
     if (snap.type !== 'label') throw new Error(`expected label, got ${snap.type}`);
     expect(snap.label).toBe('rfc');
     expect(snap.space).toBe('ENG');

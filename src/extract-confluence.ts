@@ -234,8 +234,9 @@ async function fetchComments(http: HttpClient, pageId: string): Promise<readonly
       const next = resp._links?.next;
       if (!next) break;
       const m = /[?&]cursor=([^&]+)/.exec(next);
-      if (!m) break;
-      cursor = decodeURIComponent(m[1]);
+      const cursorValue = m?.[1];
+      if (!cursorValue) break;
+      cursor = decodeURIComponent(cursorValue);
     }
   }
   return out;

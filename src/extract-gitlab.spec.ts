@@ -20,7 +20,8 @@ describe('ExtractConfig (GitLab)', () => {
     const parsed = ExtractConfig.parse({
       snapshots: [{ name: 'open', type: 'issues', projectId: 'group/project' }],
     });
-    const snap = parsed.snapshots[0];
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
     if (snap.type !== 'issues') throw new Error(`expected issues, got ${snap.type}`);
     expect(snap.state).toBe('all');
     expect(snap.maxItems).toBe(500);
@@ -32,7 +33,8 @@ describe('ExtractConfig (GitLab)', () => {
     const parsed = ExtractConfig.parse({
       snapshots: [{ name: 'merged', type: 'mrs', projectId: '12345', state: 'merged', includeChanges: true }],
     });
-    const snap = parsed.snapshots[0];
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
     if (snap.type !== 'mrs') throw new Error('expected mrs');
     expect(snap.state).toBe('merged');
     expect(snap.includeChanges).toBe(true);
@@ -42,7 +44,8 @@ describe('ExtractConfig (GitLab)', () => {
     const parsed = ExtractConfig.parse({
       snapshots: [{ name: 'recent', type: 'pipelines', projectId: '1', ref: 'main', maxItems: 50 }],
     });
-    const snap = parsed.snapshots[0];
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
     if (snap.type !== 'pipelines') throw new Error('expected pipelines');
     expect(snap.ref).toBe('main');
     expect(snap.maxItems).toBe(50);

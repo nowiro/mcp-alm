@@ -143,6 +143,7 @@ function extractHeadings(md: string): readonly string[] {
   const headings: string[] = [];
   for (const match of md.matchAll(HEADING_RE)) {
     const [, hashes, body] = match;
+    if (!hashes || !body) continue;
     const text = body.trim();
     if (text) headings.push(`${'#'.repeat(hashes.length)} ${text}`);
   }

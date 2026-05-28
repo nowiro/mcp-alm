@@ -22,7 +22,8 @@ describe('ExtractConfig (Sonar)', () => {
     const parsed = ExtractConfig.parse({
       snapshots: [{ name: 'main', type: 'quality_gate', projectKey: 'my-project' }],
     });
-    const snap = parsed.snapshots[0];
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
     if (snap.type !== 'quality_gate') throw new Error('expected quality_gate');
     expect(snap.projectKey).toBe('my-project');
     expect(snap.render).toEqual(['json', 'markdown']);
@@ -40,7 +41,8 @@ describe('ExtractConfig (Sonar)', () => {
         },
       ],
     });
-    const snap = parsed.snapshots[0];
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
     if (snap.type !== 'issues') throw new Error('expected issues');
     expect(snap.severities).toEqual(['CRITICAL', 'BLOCKER']);
     expect(snap.types).toEqual(['BUG']);
@@ -51,7 +53,8 @@ describe('ExtractConfig (Sonar)', () => {
     const parsed = ExtractConfig.parse({
       snapshots: [{ name: 'pending', type: 'hotspots', projectKey: 'p', status: 'TO_REVIEW' }],
     });
-    const snap = parsed.snapshots[0];
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
     if (snap.type !== 'hotspots') throw new Error('expected hotspots');
     expect(snap.status).toBe('TO_REVIEW');
   });
@@ -67,7 +70,8 @@ describe('ExtractConfig (Sonar)', () => {
         },
       ],
     });
-    const snap = parsed.snapshots[0];
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
     if (snap.type !== 'measures') throw new Error('expected measures');
     expect(snap.metrics).toEqual(['coverage', 'duplicated_lines_density', 'ncloc']);
   });

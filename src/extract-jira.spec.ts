@@ -26,9 +26,11 @@ describe('ExtractConfig (Jira)', () => {
       snapshots: [{ name: 'a', jql: 'project = X' }],
     });
     expect(parsed.outputDir).toBe('./output/jira');
-    expect(parsed.snapshots[0].maxIssues).toBe(1000);
-    expect(parsed.snapshots[0].render).toEqual(['json', 'markdown']);
-    expect(parsed.snapshots[0].include).toEqual({
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
+    expect(snap.maxIssues).toBe(1000);
+    expect(snap.render).toEqual(['json', 'markdown']);
+    expect(snap.include).toEqual({
       changelog: true,
       comments: true,
       worklog: true,
@@ -59,7 +61,9 @@ describe('ExtractConfig (Jira)', () => {
     const parsed = ExtractConfig.parse({
       snapshots: [{ name: 'a', jql: 'x', include: { comments: false } }],
     });
-    expect(parsed.snapshots[0].include).toEqual({
+    const [snap] = parsed.snapshots;
+    if (!snap) throw new Error('expected snapshot');
+    expect(snap.include).toEqual({
       changelog: true,
       comments: false,
       worklog: true,
@@ -191,9 +195,11 @@ const mockRegistry: FieldRegistry = {
   ready: () => true,
 };
 
-const minimalSnapshot = ExtractConfig.parse({
+const minimalSnapshotMaybe = ExtractConfig.parse({
   snapshots: [{ name: 'fixture', jql: 'project = X' }],
 }).snapshots[0];
+if (!minimalSnapshotMaybe) throw new Error('expected fixture snapshot');
+const minimalSnapshot = minimalSnapshotMaybe;
 
 describe('buildExtractedIssue — fixture roundtrip', () => {
   it('transforms minimal raw issue → canonical shape (snapshot)', () => {
@@ -381,6 +387,7 @@ describe('buildExtractedIssue — fixture roundtrip', () => {
         },
       ],
     }).snapshots[0];
+    if (!snapshotMinimal) throw new Error('expected minimal snapshot');
 
     const raw: RawIssue = {
       id: '1',

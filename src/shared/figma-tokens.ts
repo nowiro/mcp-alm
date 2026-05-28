@@ -78,7 +78,7 @@ function toCamelCase(raw: string): string {
   if (kebab.length === 0) return '';
   const parts = kebab.split('-');
   const [head, ...tail] = parts;
-  return head + tail.map((p) => (p.length === 0 ? '' : p[0].toUpperCase() + p.slice(1))).join('');
+  return (head ?? '') + tail.map((p) => (p.length === 0 ? '' : (p[0] ?? '').toUpperCase() + p.slice(1))).join('');
 }
 
 /**

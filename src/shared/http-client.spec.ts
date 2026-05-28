@@ -34,6 +34,7 @@ function mockFetchSequence(responses: readonly MockResponse[]): {
   const mock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     calls.push({ url: stringifyInput(input), init });
     const r = responses[Math.min(index, responses.length - 1)];
+    if (!r) throw new Error('mock fetch: no response configured');
     index += 1;
     // 204 / 304 must have a null body per the fetch spec.
     const bodyForbidden = r.status === 204 || r.status === 304;

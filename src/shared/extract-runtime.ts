@@ -140,8 +140,9 @@ export function buildManifest<E extends Record<string, unknown>>(
 export function parseCursorFromLink(linkOrUndefined: string | undefined): string | undefined {
   if (!linkOrUndefined) return undefined;
   const match = /[?&]cursor=([^&]+)/.exec(linkOrUndefined);
-  if (!match) return undefined;
-  return decodeURIComponent(match[1]);
+  const cursorValue = match?.[1];
+  if (!cursorValue) return undefined;
+  return decodeURIComponent(cursorValue);
 }
 
 // ── Main() boilerplate ───────────────────────────────────────────────────────

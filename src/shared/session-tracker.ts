@@ -184,8 +184,8 @@ export class SessionTracker {
 }
 
 function bump(into: Record<string, AggregatedBucket>, key: string, tokens: number): void {
-  if (Object.hasOwn(into, key)) {
-    const previous = into[key];
+  const previous = into[key];
+  if (previous !== undefined) {
     into[key] = { calls: previous.calls + 1, tokens: previous.tokens + tokens };
     return;
   }

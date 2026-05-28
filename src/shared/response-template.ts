@@ -111,7 +111,9 @@ function parseFrontmatterBlock(fmLines: readonly string[]): Record<string, unkno
       const list: string[] = [];
       i++;
       while (i < fmLines.length && isListItem(fmLines[i])) {
-        list.push(fmLines[i].replace(/^\s+-\s+/, '').trim());
+        const fmLine = fmLines[i];
+        if (fmLine === undefined) break;
+        list.push(fmLine.replace(/^\s+-\s+/, '').trim());
         i++;
       }
       fm[key] = list;
@@ -258,6 +260,7 @@ function renderLoops(input: string, scope: Record<string, unknown>): string {
     const start = open.index;
     const bodyStart = start + open[0].length;
     const path = open[1];
+    if (path === undefined) break;
     const end = findMatchingEnd(out, bodyStart);
     if (end === -1) break;
     const inner = out.slice(bodyStart, end - 9);

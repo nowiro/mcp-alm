@@ -50,6 +50,82 @@ można było rozumieć koszt bez zewnętrznego stosu observability.
 
 Pełna polityka żyje w [SECURITY.md](SECURITY.md) oraz [docs/explanation/security-architecture.md](docs/explanation/security-architecture.md).
 
+## Uruchomienie bez klonowania (npx)
+
+Paczka [`@nowiro/mcp-alm`](https://www.npmjs.com/package/@nowiro/mcp-alm) jest publikowana na npm z prebuiltem `dist/`. Możesz skonfigurować dowolnego klienta MCP bezpośrednio przez `npx -y -p @nowiro/mcp-alm <bin>` — **bez `git clone`, bez `npm install`, bez `npm run build`**.
+
+### VS Code ≥ 1.121 — Copilot Chat
+
+Edytuj user-level `mcp.json` (Command Palette → "MCP: Open user settings (JSON)") lub workspace `.vscode/mcp.json`:
+
+```json
+{
+  "$schema": "https://aka.ms/vscode-mcp.schema.json",
+  "servers": {
+    "alm-jira": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "-p", "@nowiro/mcp-alm", "mcp-jira"]
+    },
+    "alm-confluence": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "-p", "@nowiro/mcp-alm", "mcp-confluence"]
+    },
+    "alm-figma": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "-p", "@nowiro/mcp-alm", "mcp-figma"]
+    },
+    "alm-sonar": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "-p", "@nowiro/mcp-alm", "mcp-sonar"]
+    },
+    "alm-gitlab": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "-p", "@nowiro/mcp-alm", "mcp-gitlab"]
+    }
+  }
+}
+```
+
+**Windows + nvm-windows:** zamień każdy `"command": "npx"` na `"command": "cmd"` i prependuj `"args": ["/c", "npx.cmd", "-y", "-p", "@nowiro/mcp-alm", "mcp-jira"]`. Szczegóły: [docs/getting-started/vscode-setup.md](docs/getting-started/vscode-setup.md).
+
+### Claude Desktop / Cursor / inny host MCP
+
+```json
+{
+  "mcpServers": {
+    "alm-jira": {
+      "command": "npx",
+      "args": ["-y", "-p", "@nowiro/mcp-alm", "mcp-jira"]
+    }
+  }
+}
+```
+
+### Konfiguracja tokenów (jednorazowo)
+
+Tokeny dalej żyją w pliku `~/.config/mcp-alm/config.json` (POSIX) lub `%USERPROFILE%\.config\mcp-alm\config.json` (Windows) — `npx` ich nie tworzy automatycznie. Utwórz plik ręcznie z tym minimalnym szablonem (usuń sekcje konektorów, których nie używasz) i ustaw uprawnienia `0600` na POSIX:
+
+```json
+{
+  "jira": { "baseUrl": "https://your-org.atlassian.net", "token": "..." },
+  "confluence": { "baseUrl": "https://your-org.atlassian.net/wiki", "token": "..." },
+  "figma": { "baseUrl": "https://api.figma.com", "token": "..." },
+  "sonar": { "baseUrl": "https://sonarcloud.io", "token": "..." },
+  "gitlab": { "baseUrl": "https://gitlab.com", "token": "..." }
+}
+```
+
+### Pin wersji vs. zawsze najnowsza
+
+`npx -y -p @nowiro/mcp-alm mcp-jira` (bez `@`) pobiera **najnowszą** opublikowaną wersję przy każdym starcie. Aby przypiąć do konkretnej: `npx -y -p @nowiro/mcp-alm@1.1.0 mcp-jira`.
+
+---
+
 ## Quickstart (5 minut)
 
 ```sh

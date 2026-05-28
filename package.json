@@ -1,14 +1,43 @@
 {
-  "name": "mcp-alm",
+  "name": "@nowiro/mcp-alm",
   "version": "1.1.0",
-  "private": true,
   "type": "module",
   "description": "MCP servers for ALM tools (Jira, Confluence, Figma, SonarQube, GitLab). Read-first, write-guarded. Works with GitHub Copilot in VS Code >= 1.121 and IntelliJ IDEA >= 2026.1.2.",
   "license": "MIT",
+  "homepage": "https://github.com/nowiro/mcp-alm#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nowiro/mcp-alm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nowiro/mcp-alm/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "github-copilot",
+    "copilot",
+    "alm",
+    "jira",
+    "confluence",
+    "figma",
+    "sonarqube",
+    "gitlab"
+  ],
   "engines": {
     "node": ">=22.22.1"
   },
   "packageManager": "npm@11.16.0",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "bin": {
     "mcp-jira": "./dist/server-jira.js",
     "mcp-confluence": "./dist/server-confluence.js",
@@ -18,6 +47,7 @@
   },
   "scripts": {
     "prepare": "husky",
+    "prepublishOnly": "npm run build",
     "bootstrap": "node tools/scripts/bootstrap.mjs",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",

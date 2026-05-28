@@ -1,0 +1,49 @@
+name: Release
+
+# Publishes @nowiro/mcp-alm to npm on tag push (vX.Y.Z).
+#
+# Pre-flight (one-time, by repo owner):
+#  1. npm account + @nowiro org with publish rights for this package.
+#  2. Generate npm "Automation" access token (Read + Write, scoped to @nowiro).
+#  3. Add it as GitHub repo secret `NPM_TOKEN` (Settings → Secrets → Actions).
+#  4. Bump version in package.json + CHANGELOG, then `git tag v1.2.0 && git push --tags`.
+#
+# Provenance: this workflow uses `--provenance` which requires `id-token: write`
+# and a public package on npm — both already configured below.
+#
+# TODO(security): replace `@v4` floating tags with commit SHAs before merging
+# to main (OpenSSF Scorecard "Pinned-Dependencies"). Example:
+#   uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11  # v4.1.1
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write # required for npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify (format · lint · typecheck · test · build · ai:validate · validate:inputs)
+        run: npm run verify
+
+      - name: Publish to npm with provenance
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -35,7 +35,7 @@ import { z } from 'zod';
  *
  * Resolution order:
  *   1. `$MCP_ALM_REPO_SLUG` env (operator override, useful for tests / migration)
- *   2. `package.json#name` discovered by walking up from this file
+ *   2. `package.json#name` (npm scope stripped) discovered by walking up from this file
  *   3. literal `'mcp-alm'` as last-resort fallback
  */
 function resolveRepoSlug(): string {
@@ -51,7 +51,10 @@ function resolveRepoSlug(): string {
       const candidate = nodePath.join(directory, 'package.json');
       if (existsSync(candidate)) {
         const pkg = JSON.parse(readFileSync(candidate, 'utf8')) as { name?: string };
-        if (pkg.name && typeof pkg.name === 'string') return pkg.name;
+        if (pkg.name && typeof pkg.name === 'string') {
+          // Strip npm scope so "@nowiro/mcp-alm" → "mcp-alm" (fork-safe; unscoped names unchanged).
+          return pkg.name.replace(/^@[^/]+\//, '');
+        }
         break;
       }
       const parent = nodePath.dirname(directory);

@@ -225,7 +225,7 @@ Repo wystawia **jeden widoczny custom chat mode** w VS Code Copilot — `orchest
 3. Opisz zadanie — np. _"Dodaj `jira.get_sprint` z parametrami `boardId`, `state`, zwraca canonical sprint shape"_ albo _"Rozbij epic PROJ-100 na stories per INVEST z cut na 3 sprinty"_.
 4. Orchestrator dobiera personę (`connector-author` lub `epic-strategist` w przykładach powyżej), pisze plan, deleguje, walidacja przez DoD gate.
 
-Pełna mapa personas + decision tree: [`AGENTS.md`](AGENTS.md) i [`.github/chatmodes/orchestrator.chatmode.md`](.github/chatmodes/orchestrator.chatmode.md).
+Pełna mapa personas + decision tree: [`AGENTS.md`](AGENTS.md) i [`.github/agents/orchestrator.agent.md`](.github/agents/orchestrator.agent.md).
 
 **Przykładowy flow dla "redesign Confluence space ENG":**
 
@@ -248,7 +248,7 @@ Slash-commands z [`.github/prompts/`](.github/prompts/) uruchamiają konkretną 
 | `/security-review` | security audit bieżącego diffu                     |
 | `/refine`          | dopracuj surowy prompt przed wysłaniem (read-only) |
 
-Inne hosty MCP (Claude Desktop, Cursor, custom Agent SDK) czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback gdy nie wspierają custom chat modes.
+Inne hosty MCP (Claude Desktop, Cursor, custom Agent SDK) czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback gdy nie wspierają custom agentów.
 
 ## MCP Prompts — preconfigured slash-commands
 
@@ -430,7 +430,7 @@ docs/                                              # dokumentacja w stylu Diáta
 .vscode/mcp.json                                   # natywna rejestracja MCP dla VS Code
 .idea/mcp-servers.example.xml                      # szablon importu dla IntelliJ AI Assistant
 .github/instructions/                              # auto-applied Copilot rules per applyTo glob
-.github/agents/                                    # custom chat modes (orchestrator, connector-author, ...)
+.github/agents/                                    # custom agents — orchestrator widoczny, reszta user-invocable: false
 .github/prompts/                                   # slash-commands (/release, /add-tool, /security-review, /refine, ...)
 .github/skills/                                    # Agent Skills (SKILL.md) — model-decided, auto-discovered
 ```

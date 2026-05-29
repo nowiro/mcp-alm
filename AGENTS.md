@@ -18,7 +18,7 @@ Klient: **GitHub Copilot** w VS Code ≥ 1.121, IntelliJ ≥ 2026.1.2, Eclipse (
 - `.claude/` (workspace Claude Code: agents, commands, hooks, skills, settings)
 - `.ai/` (kanoniczna wiedza AI — rules, agents, workflows, prompts)
 
-Single source of truth dla agentów: ten `AGENTS.md` + [`.github/copilot-instructions.md`](.github/copilot-instructions.md) + [`.github/instructions/`](.github/instructions/) + [`.github/prompts/`](.github/prompts/) + [`.github/chatmodes/`](.github/chatmodes/) + [`.github/skills/`](.github/skills/).
+Single source of truth dla agentów: ten `AGENTS.md` + [`.github/copilot-instructions.md`](.github/copilot-instructions.md) + [`.github/instructions/`](.github/instructions/) + [`.github/prompts/`](.github/prompts/) + [`.github/agents/`](.github/agents/) + [`.github/skills/`](.github/skills/).
 
 > Uwaga: inne MCP hosty (Claude Desktop, Cursor, custom Agent SDK) mogą **konsumować** uruchomione serwery MCP zgodnie ze standardem MCP — to inna sprawa niż konfiguracja dewelopmentu kodu repo.
 
@@ -35,17 +35,17 @@ Pełen rulebook → [`.github/copilot-instructions.md`](.github/copilot-instruct
 7. **DoD = `npm run verify`** (format + lint + typecheck + test + build + ai:validate).
 8. **Conventional Commits** — husky commit-msg + commitlint enforce.
 
-## Custom chat modes (VS Code Copilot)
+## Custom agents (VS Code Copilot)
 
-**Jeden widoczny tryb.** Repo wystawia tylko jeden custom chat mode w mode picker Copilota — `orchestrator`. Routuje on do wewnętrznych personas które nie pojawiają się w pickerze (świadoma decyzja: prostsze UX dla użytkownika końcowego).
+**Jeden widoczny agent.** Repo wystawia w pickerze Copilota tylko jednego agenta — `orchestrator`. Pozostali specjaliści mają `user-invocable: false`, więc nie pojawiają się w pickerze; orchestrator woła ich jako subagentów (świadoma decyzja: prostsze UX dla użytkownika końcowego).
 
-### Widoczne w mode picker
+### Widoczne w pickerze
 
-| Mode                                                         | Kiedy używać                                                               |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| [`orchestrator`](.github/chatmodes/orchestrator.chatmode.md) | każde high-level zadanie — multi-step, plan-first, routing do specjalistów |
+| Agent                                                  | Kiedy używać                                                               |
+| ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| [`orchestrator`](.github/agents/orchestrator.agent.md) | każde high-level zadanie — multi-step, plan-first, routing do specjalistów |
 
-### Wewnętrzne persony (ładowane przez orchestrator, nie pojawiają się w pickerze)
+### Wewnętrzne persony (`user-invocable: false` — subagenci, nie w pickerze)
 
 | Persona                                                                | Kiedy orchestrator je ładuje                   |
 | ---------------------------------------------------------------------- | ---------------------------------------------- |
@@ -61,7 +61,7 @@ Pełen rulebook → [`.github/copilot-instructions.md`](.github/copilot-instruct
 
 Slash-commands w [`.github/prompts/`](.github/prompts/) (`/add-tool`, `/new-connector`, `/release`, `/security-review`, `/refine`) uruchamiają konkretną ścieżkę bez przechodzenia przez orchestratora — dla power userów którzy wiedzą co chcą.
 
-VS Code wymaga `chat.modeFilesLocations` w [`.vscode/settings.json`](.vscode/settings.json) (chatmodes są discoverable automatycznie z `.github/chatmodes/`). Inne hosty MCP czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback.
+VS Code odkrywa agentów z `.github/agents/` (ustawione w [`.vscode/settings.json`](.vscode/settings.json) przez `chat.agentFilesLocations`). Inne hosty MCP czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback.
 
 ## Gdzie idzie nowa praca
 

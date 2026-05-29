@@ -117,6 +117,20 @@ async function main() {
     must(!description || description.length <= 1024, `${skillFile}: "description" exceeds 1024 chars`);
   }
 
+  // ── 7. exactly one user-invocable agent (the orchestrator) ──
+  // Custom agents in .github/agents all show in the VS Code picker unless they set
+  // `user-invocable: false`. We expose ONE (orchestrator) and hide the rest as subagents.
+  const visibleAgents = [];
+  for (const f of agents) {
+    if (!f.endsWith('.agent.md')) continue;
+    const fm = await frontmatter(f);
+    if (fm && !/^user-invocable:\s*false\b/m.test(fm)) visibleAgents.push(f.split(/[/\\]/).pop());
+  }
+  must(
+    visibleAgents.length === 1,
+    `expected exactly 1 user-invocable agent (orchestrator); found ${visibleAgents.length}: ${visibleAgents.join(', ')}`,
+  );
+
   if (errors.length === 0) {
     console.log(
       `✓ mcp-alm Copilot configuration is valid — ` +

@@ -12,14 +12,13 @@ gdy uzna za potrzebne** — na podstawie pola `description`. Działa _progressiv
 metadata zawsze w kontekście, treść `SKILL.md` dopiero przy dopasowaniu do zadania, a dodatkowe
 pliki dopiero gdy instrukcja je zreferencjonuje. Dzięki temu wiele skilli nie zapycha okna kontekstu.
 
-| Katalog                                  | Cel                                             | Wywołanie         | Status    |
-| ---------------------------------------- | ----------------------------------------------- | ----------------- | --------- |
-| `.github/prompts/*.prompt.md`            | Slash-commands (`/release`, `/security-review`) | ręczne `/<name>`  | **Used**  |
-| `.github/agents/*.agent.md`              | Wewnętrzne persony ładowane przez orchestrator  | przez chatmode    | **Used**  |
-| `.github/chatmodes/*.chatmode.md`        | Tryby widoczne w VS Code mode pickerze          | dropdown          | **Used**  |
-| `.github/instructions/*.instructions.md` | Auto-applied rules (`applyTo: <glob>`)          | automat per glob  | **Used**  |
-| `.github/copilot-instructions.md`        | Repo-wide instrukcje top-priority               | każda sesja       | **Used**  |
-| **`.github/skills/<name>/SKILL.md`**     | Reusable, parametric task; model decyduje kiedy | **model-decided** | **Ready** |
+| Katalog                                  | Cel                                                                                 | Wywołanie         | Status    |
+| ---------------------------------------- | ----------------------------------------------------------------------------------- | ----------------- | --------- |
+| `.github/prompts/*.prompt.md`            | Slash-commands (`/release`, `/security-review`)                                     | ręczne `/<name>`  | **Used**  |
+| `.github/agents/<name>.agent.md`         | Custom agents — `orchestrator` widoczny, reszta `user-invocable: false` (subagenci) | picker / subagent | **Used**  |
+| `.github/instructions/*.instructions.md` | Auto-applied rules (`applyTo: <glob>`)                                              | automat per glob  | **Used**  |
+| `.github/copilot-instructions.md`        | Repo-wide instrukcje top-priority                                                   | każda sesja       | **Used**  |
+| **`.github/skills/<name>/SKILL.md`**     | Reusable, parametric task; model decyduje kiedy                                     | **model-decided** | **Ready** |
 
 Reguła rozdziału **prompt vs skill**:
 

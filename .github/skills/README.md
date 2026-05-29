@@ -62,12 +62,13 @@ oraz to, że skille leżą w podkatalogach (nie luzem jako flat `*.md`). Logika 
 
 ## Stan w tym repo
 
-Dziś: **brak skilli** — katalog zawiera tylko ten README. Kandydaci do portu z `.github/prompts/`
-→ skill (reusable, model-decided, mogą wołać skrypty), gdy zdecydujemy się ruszyć:
+Aktywne skille (auto-discovered, **read-only** — respektują kontrakt read-first, write-guarded):
 
-- **pr-mr-review** — line-by-line review MR/PR z komentarzami postowanymi via GitLab/GitHub.
-- **jira-triage** — triage i grupowanie issues z Jiry (severity, komponenty, epiki).
-- **confluence-to-spec** — strona Confluence → ustrukturyzowany spec MD.
+- **[pr-mr-review](pr-mr-review/SKILL.md)** — line-by-line review GitLab MR przez read tools `mcp-gitlab`.
+- **[jira-triage](jira-triage/SKILL.md)** — triage i grupowanie issues z Jiry (priorytet, komponent, epik).
+- **[confluence-to-spec](confluence-to-spec/SKILL.md)** — strona Confluence → ustrukturyzowany spec MD.
+
+Kolejni kandydaci do portu z `.github/prompts/` → skill: np. `/security-review`.
 
 Uwaga na kontrakt repo: connectory `mcp-alm` są **read-first, write-guarded**. Każdy skill,
 który potrafi pisać (komentarz w MR, transition w Jirze), musi respektować ten guard i jawnie

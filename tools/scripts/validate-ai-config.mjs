@@ -115,6 +115,22 @@ async function main() {
       must(skillName === name, `.github/skills/${name}/: folder name must equal frontmatter "name" ("${skillName}")`);
     }
     must(!description || description.length <= 1024, `${skillFile}: "description" exceeds 1024 chars`);
+    // Routing-rule heuristic (skills.sh convention): the description is what the model matches
+    // a skill on, so it must read like a trigger ("Use when …"), not a bare title.
+    if (description) {
+      const isRoutingRule =
+        /\b(use\s+(this\s+)?(skill\s+)?(when|for)|when\s+the\s+user|trigger(s)?\s+when|invoke\s+when)\b/i.test(
+          description,
+        );
+      must(
+        isRoutingRule,
+        `${skillFile}: "description" should read like a routing rule — add a trigger clause such as "Use when …" so the model can match it (skills.sh convention), not just a title`,
+      );
+      must(
+        description.length >= 40,
+        `${skillFile}: "description" is too short (${description.length} chars) — say WHAT the skill does AND WHEN to use it`,
+      );
+    }
   }
 
   // ── 7. exactly one user-invocable agent (the orchestrator) ──

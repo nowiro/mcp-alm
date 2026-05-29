@@ -1,53 +1,88 @@
-# .github/skills/ — forward-compat placeholder
+# .github/skills/ — Copilot Agent Skills
 
-> **Status: empty (placeholder).** Ten katalog rezerwujemy pod ewentualny przyszły
-> Copilot pattern `.github/skills/`. Dziś (2026-05) nie istnieje jeszcze stable
-> spec ze strony GitHub Copilot — używamy `.github/prompts/` + `.github/agents/`.
+> **Status: active.** Agent Skills to stabilna funkcja GitHub Copilota (VS Code agent mode,
+> Copilot CLI, cloud agent), oparta o otwarty standard [agentskills.io](https://agentskills.io).
+> Ten katalog jest **auto-discovered** przez Copilota — każdy podkatalog `<name>/SKILL.md`
+> to jeden skill. Nie trzeba żadnego ustawienia w `.vscode/settings.json`.
 
-## Dlaczego ten katalog istnieje (pusty)
+## Czym jest skill (i jak ma się do prompt / agent / instruction)
 
-[github/spec-kit](https://github.com/github/spec-kit) zaczął provisioning'ować
-`.github/skills/` on demand podczas instalacji extension/preset (release 0.8.12,
-2026-05-20). Sygnał, że GitHub Copilot prawdopodobnie wprowadzi ten katalog jako
-nową kategorię artefaktów obok prompts/agents/instructions. Trzymamy placeholder
-żeby:
+Skill = folder z instrukcją (i opcjonalnie skryptami/zasobami), który **Copilot sam ładuje
+gdy uzna za potrzebne** — na podstawie pola `description`. Działa _progressive disclosure_:
+metadata zawsze w kontekście, treść `SKILL.md` dopiero przy dopasowaniu do zadania, a dodatkowe
+pliki dopiero gdy instrukcja je zreferencjonuje. Dzięki temu wiele skilli nie zapycha okna kontekstu.
 
-1. **Reservować nazwę katalogu** — uniknąć kolizji gdy ten layout się ustabilizuje.
-2. **Dokumentować decyzję** — czytelnik widzi `skills/` i wie z czego on jest, a nie szuka commitu.
-3. **Ułatwić migrację** — gdy spec się ustabilizuje, dodajemy `*.skill.md` tutaj zamiast szukać i rozmieszczać po raz pierwszy.
+| Katalog                                  | Cel                                             | Wywołanie         | Status    |
+| ---------------------------------------- | ----------------------------------------------- | ----------------- | --------- |
+| `.github/prompts/*.prompt.md`            | Slash-commands (`/release`, `/security-review`) | ręczne `/<name>`  | **Used**  |
+| `.github/agents/*.agent.md`              | Wewnętrzne persony ładowane przez orchestrator  | przez chatmode    | **Used**  |
+| `.github/chatmodes/*.chatmode.md`        | Tryby widoczne w VS Code mode pickerze          | dropdown          | **Used**  |
+| `.github/instructions/*.instructions.md` | Auto-applied rules (`applyTo: <glob>`)          | automat per glob  | **Used**  |
+| `.github/copilot-instructions.md`        | Repo-wide instrukcje top-priority               | każda sesja       | **Used**  |
+| **`.github/skills/<name>/SKILL.md`**     | Reusable, parametric task; model decyduje kiedy | **model-decided** | **Ready** |
 
-## Co prompts / skills / instructions / agents znaczą u nas dziś
+Reguła rozdziału **prompt vs skill**:
 
-| Katalog                                                         | Cel dziś (stable)                                                                                                                                             | Status          |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
-| [`.github/prompts/`](../prompts/)                               | Slash-commands w Copilot Chat (`/release`, `/diagnose`, …). Frontmatter `mode: agent\|edit\|ask` + `description`. Manualnie wywoływane przez `/<promptname>`. | **Used**        |
-| [`.github/agents/`](../agents/)                                 | Custom chat modes (orchestrator, connector-author, …). VS Code 1.121+ wybiera z dropdownu nad inputem. Frontmatter `description` + `tools: [...]`.            | **Used**        |
-| [`.github/instructions/`](../instructions/)                     | Auto-applied rules z polem `applyTo: <glob>`. Załadowane przy każdej sesji do plików matching glob.                                                           | **Used**        |
-| [`.github/copilot-instructions.md`](../copilot-instructions.md) | Repo-wide instrukcje top-priority. Załadowane przy każdej sesji.                                                                                              | **Used**        |
-| **`.github/skills/`** (tutaj)                                   | _TBD._ Czekamy na stable GitHub Copilot spec. Spec-kit już provisioning'uje, ale to ich extension catalog, nie naszą.                                         | **Placeholder** |
+- **prompt** — single-shot, użytkownik świadomie wpisuje `/<name>` (np. `release`, `security-review`).
+- **skill** — model sam sięga, gdy `description` pasuje do zadania; może dołączać bundled skrypty.
 
-## Plan migracji (gdy spec się ustabilizuje)
+## Format (stable — agentskills.io)
 
-Memory item w `ai-workspace/PLAN.md` przewidywał ten ruch: _"GitHub Copilot może
-wprowadzić `.github/skills/` jako alternative do `.github/prompts/`. Nasz aktualny
-setup (`prompts/*.prompt.md` + `agents/*.agent.md`) jest stable dziś, ale za
-6-12 miesięcy może być deprecated/legacy."_
+Każdy skill to **folder**, a nie pojedynczy plik:
 
-Triggery do działania:
+```
+.github/skills/
+  <skill-name>/
+    SKILL.md          # wymagany
+    scripts/          # opcjonalnie (np. .mjs wołane z instrukcji)
+    examples/         # opcjonalnie
+```
 
-- [ ] GitHub Copilot zaanonsował `chat.skillFilesLocations` lub analog w VS Code settings
-- [ ] spec-kit lub Microsoft docs dokumentuje stable `.skill.md` frontmatter shape
-- [ ] Pierwszy real-world example w community-catalog
+`SKILL.md` to Markdown z YAML frontmatter:
 
-Wtedy: portuj subset `.github/prompts/*.prompt.md` które bardziej pasują do "skill" (reusable, parametric task) niż "prompt" (single-shot slash-command). Update `.vscode/settings.json` żeby wskazywał na ten katalog.
+```markdown
+---
+name: pr-mr-review
+description: Review a GitLab/GitHub merge request line by line and post review comments via the mcp-alm tools. Use when the user asks to review an MR/PR.
+---
 
-## Co NIE robić
+# Treść — kroki, przykłady, referencje do scripts/…
+```
 
-- **Nie wymyślaj formatów.** Brak frontmatter convention w tej chwili — czekamy na GitHub. Pisanie naszych `.skill.md` teraz = guaranteed rework.
-- **Nie kopiuj zawartości** z `.github/prompts/`. To dziś działa; w przyszłości może migracja, ale dziś duplikuje.
-- **Nie dodawaj `chat.skillFilesLocations`** do `.vscode/settings.json`. VS Code go nie zna i może wyrzucić warning.
+Reguły formatu:
 
-## Źródło sygnału
+- Wymagane pola: `name` + `description`.
+- `name` **musi** równać się nazwie folderu; dozwolone `a-z`, `0-9`, `-`; maks. 64 znaki.
+- `description` ≤ 1024 znaki — to ono decyduje o auto-matchowaniu, więc opisz **co** robi i **kiedy** użyć (po angielsku, zgodnie z language policy dla opisów konsumowanych przez tooling).
+- Auto-discovery z `.github/skills/` — **bez** żadnego settingu. (Dodatkowe lokalizacje: `chat.agentSkillsLocations`; dziedziczenie z parent repo: `chat.useCustomizationsInParentRepositories`.)
+- Otwarty standard — `SKILL.md` z `.claude/skills/` można 1:1 skopiować lub symlinkować tutaj.
 
-- [spec-kit 0.8.12 commit `e54653e`](https://github.com/github/spec-kit/commit/e54653e) — _"fix: create skills directory on demand during extension/preset install"_
-- Memory: `C:\Users\wojtek\.claude\projects\C--github\memory\PLAN.md` (ai-workspace)
+Walidacja: `npm run ai:validate` sprawdza obecność `name`/`description`, regułę `name == folder`
+oraz to, że skille leżą w podkatalogach (nie luzem jako flat `*.md`). Logika w
+[`tools/scripts/validate-ai-config.mjs`](../../tools/scripts/validate-ai-config.mjs), sekcja 6.
+
+## Stan w tym repo
+
+Dziś: **brak skilli** — katalog zawiera tylko ten README. Kandydaci do portu z `.github/prompts/`
+→ skill (reusable, model-decided, mogą wołać skrypty), gdy zdecydujemy się ruszyć:
+
+- **pr-mr-review** — line-by-line review MR/PR z komentarzami postowanymi via GitLab/GitHub.
+- **jira-triage** — triage i grupowanie issues z Jiry (severity, komponenty, epiki).
+- **confluence-to-spec** — strona Confluence → ustrukturyzowany spec MD.
+
+Uwaga na kontrakt repo: connectory `mcp-alm` są **read-first, write-guarded**. Każdy skill,
+który potrafi pisać (komentarz w MR, transition w Jirze), musi respektować ten guard i jawnie
+prosić o potwierdzenie zapisu — patrz [`.github/instructions/connectors.instructions.md`](../instructions/connectors.instructions.md).
+
+## Historia decyzji
+
+- Wcześniej ten katalog był **placeholderem** „czekamy na stable spec GitHuba; nie wymyślaj formatu".
+- Spec jest stabilny: GitHub Copilot ogłosił Agent Skills 2025-12-18, wsparcie `SKILL.md` w VS Code
+  (agent mode) ustabilizowane ~2026-04. README zaktualizowane **2026-05-29** — placeholder → active.
+- Najwcześniejszy sygnał (zachowany dla kontekstu): spec-kit 0.8.12 provisioning `.github/skills/`.
+
+## Źródła
+
+- [VS Code — Use Agent Skills](https://code.visualstudio.com/docs/copilot/customization/agent-skills)
+- [GitHub Docs — About agent skills](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills)
+- [Changelog — Copilot now supports Agent Skills (2025-12-18)](https://github.blog/changelog/2025-12-18-github-copilot-now-supports-agent-skills/)

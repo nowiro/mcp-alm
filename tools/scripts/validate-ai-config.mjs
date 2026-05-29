@@ -6,6 +6,7 @@
  *   - every file in .github/instructions/ has frontmatter with `applyTo` + `description`
  *   - every file in .github/prompts/ has frontmatter with `mode` + `description`
  *   - every file in .github/agents/ has frontmatter with `description`
+ *   - every .github/skills/<name>/SKILL.md has frontmatter `name` (== folder) + `description`
  *
  * Exits 0 on success, 1 on any failure. Used by `npm run ai:validate` and CI.
  */
@@ -26,10 +27,21 @@ async function listMd(dir) {
   return entries.filter((e) => e.isFile() && e.name.endsWith('.md')).map((e) => resolve(dir, e.name));
 }
 
+async function listDirs(dir) {
+  if (!existsSync(dir)) return [];
+  const entries = await readdir(dir, { withFileTypes: true });
+  return entries.filter((e) => e.isDirectory()).map((e) => e.name);
+}
+
 async function frontmatter(file) {
   const txt = await readFile(file, 'utf8');
   const fm = txt.match(/^---\n([\s\S]+?)\n---/);
   return fm ? fm[1] : null;
+}
+
+function fmValue(fm, key) {
+  const m = fm.match(new RegExp(`^${key}:[ \\t]*(.+?)[ \\t]*$`, 'm'));
+  return m ? m[1].replace(/^['"]|['"]$/g, '') : null;
 }
 
 async function checkKeyedFrontmatter(file, requiredKeys) {
@@ -78,10 +90,37 @@ async function main() {
     await checkKeyedFrontmatter(f, ['description']);
   }
 
+  // ── 6. .github/skills/<name>/SKILL.md — Agent Skills (agentskills.io open format) ──
+  // Each skill is a folder Copilot auto-discovers as `<name>/SKILL.md`. README.md and any
+  // other loose top-level file is not a skill. See .github/skills/README.md.
+  for (const f of (await listMd('.github/skills')).filter((p) => !/readme\.md$/i.test(p))) {
+    errors.push(`${f}: a skill must live in a subfolder as <name>/SKILL.md, not as a flat file`);
+  }
+  const skills = await listDirs('.github/skills');
+  for (const name of skills) {
+    const skillFile = resolve('.github/skills', name, 'SKILL.md');
+    if (!existsSync(skillFile)) {
+      errors.push(`.github/skills/${name}/: missing SKILL.md`);
+      continue;
+    }
+    const fm = await frontmatter(skillFile);
+    must(fm, `${skillFile}: missing YAML frontmatter`);
+    if (!fm) continue;
+    const skillName = fmValue(fm, 'name');
+    const description = fmValue(fm, 'description');
+    must(skillName, `${skillFile}: frontmatter missing "name"`);
+    must(description, `${skillFile}: frontmatter missing "description"`);
+    if (skillName) {
+      must(/^[a-z0-9-]{1,64}$/.test(skillName), `${skillFile}: "name" must be lowercase a-z/0-9/hyphen, max 64 chars`);
+      must(skillName === name, `.github/skills/${name}/: folder name must equal frontmatter "name" ("${skillName}")`);
+    }
+    must(!description || description.length <= 1024, `${skillFile}: "description" exceeds 1024 chars`);
+  }
+
   if (errors.length === 0) {
     console.log(
       `✓ mcp-alm Copilot configuration is valid — ` +
-        `${instructions.length} instructions · ${prompts.length} prompts · ${agents.length} agents`,
+        `${instructions.length} instructions · ${prompts.length} prompts · ${agents.length} agents · ${skills.length} skills`,
     );
     process.exit(0);
   }

@@ -43,7 +43,7 @@ Każdy skill to **folder**, a nie pojedynczy plik:
 ```markdown
 ---
 name: pr-mr-review
-description: Review a GitLab/GitHub merge request line by line and post review comments via the mcp-alm tools. Use when the user asks to review an MR/PR.
+description: Review a GitLab merge request line by line via the mcp-gitlab read tools and return the review in chat. Use when the user asks to review an MR/PR. Read-only — does not post to GitLab.
 ---
 
 # Treść — kroki, przykłady, referencje do scripts/…

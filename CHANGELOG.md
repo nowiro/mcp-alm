@@ -16,6 +16,9 @@ projekt stosuje [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`src/shared/resource.ts`** — `ResourceDefinition` + `defineResource` + helper `defineMarkdownResource({ uri, name, description, file })` który resolwuje path z `templates/resources/<file>.md` przez `import.meta.url` (działa cross-platform niezależnie od `cwd` callera).
 - **`templates/resources/`** — 6 markdown źródeł: `jira-jql-cheatsheet.md`, `jira-custom-fields-guide.md`, `confluence-cql-cheatsheet.md`, `gitlab-pipeline-patterns.md`, `sonar-severity-guide.md`, `figma-design-tokens-spec.md`. Edytowalne bez restartu Copilota.
 - **`README.md`** — sekcja "MCP Resources — preconfigured docs context" z tabelą URI + wzorcem użycia w VS Code Copilot Chat.
+- **`.github/skills/` — Agent Skills (agentskills.io) adopted.** README przepisany z placeholdera na active (stable spec: Copilot 2025-12, VS Code `SKILL.md` ~2026-04). Pierwszy realny skill `pr-mr-review/SKILL.md` — read-only review GitLab MR przez `gitlab.get_mr` + `gitlab.merge_request_changes`, wynik w czacie (nie postuje do GitLaba — brak write-toola).
+- **`tools/scripts/validate-ai-config.mjs`** — sekcja 6: walidacja `.github/skills/<name>/SKILL.md` (`name` + `description`, `name == folder`, charset/długość, reject flat `*.md`). `npm run ai:validate` raportuje licznik `N skills`.
+- **`.github/prompts/refine.prompt.md`** — slash-command `/refine` (`mode: ask`): bierze surowy zarys promptu i zwraca dopracowaną wersję do akceptacji; bez side-effectów (nie edytuje plików, nie woła toolów).
 
 ### Removed
 
@@ -35,6 +38,10 @@ projekt stosuje [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`src/shared/mcp-server.ts`** — `StartOptions` rozszerzone o `resources: readonly ResourceDefinition[]`; serwer rejestruje teraz `ListResourcesRequestSchema` + `ReadResourceRequestSchema` z capability `resources: {}`.
 - **SHA-pinning wszystkich GitHub Actions** — `actions/checkout`, `actions/setup-node`, `actions/upload-artifact`, `amannn/action-semantic-pull-request`, `gitleaks/gitleaks-action`, `ossf/scorecard-action`, `github/codeql-action/upload-sarif` w `ci.yml`, `pr-checks.yml` i `scorecard.yml` zmienione z floating tag (np. `@v4`) na konkretne commit SHA. OpenSSF Scorecard przestanie flagować "Pinned-Dependencies". `release.yml` startuje z floating tags + TODO do spinowania przed merge na main.
 - **`README.md`** + **`CHANGELOG.md`** — `<your-org>` → `nowiro`.
+
+### Fixed
+
+- **`src/shared/user-config.ts`** — `resolveRepoSlug` obcina teraz scope npm (`@nowiro/mcp-alm` → `mcp-alm`), więc config dir wraca do `~/.config/mcp-alm/` zamiast `~/.config/@nowiro/mcp-alm/`. Regresja po scoped rename pakietu; naprawia 2 testy `getUserConfigPath`.
 
 ## [1.1.0] — 2026-05-25
 

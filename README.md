@@ -240,12 +240,13 @@ orchestrator → extract:confluence --space=ENG
 
 Slash-commands z [`.github/prompts/`](.github/prompts/) uruchamiają konkretną ścieżkę bez routingu przez orchestrator:
 
-| Slash command      | Co robi                                      |
-| ------------------ | -------------------------------------------- |
-| `/add-tool`        | dodaj narzędzie w istniejącym connectorze    |
-| `/new-connector`   | scaffolding nowego konektora ALM             |
-| `/release`         | release flow (bump wersji + CHANGELOG + tag) |
-| `/security-review` | security audit bieżącego diffu               |
+| Slash command      | Co robi                                            |
+| ------------------ | -------------------------------------------------- |
+| `/add-tool`        | dodaj narzędzie w istniejącym connectorze          |
+| `/new-connector`   | scaffolding nowego konektora ALM                   |
+| `/release`         | release flow (bump wersji + CHANGELOG + tag)       |
+| `/security-review` | security audit bieżącego diffu                     |
+| `/refine`          | dopracuj surowy prompt przed wysłaniem (read-only) |
 
 Inne hosty MCP (Claude Desktop, Cursor, custom Agent SDK) czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback gdy nie wspierają custom chat modes.
 
@@ -430,7 +431,8 @@ docs/                                              # dokumentacja w stylu Diáta
 .idea/mcp-servers.example.xml                      # szablon importu dla IntelliJ AI Assistant
 .github/instructions/                              # auto-applied Copilot rules per applyTo glob
 .github/agents/                                    # custom chat modes (orchestrator, connector-author, ...)
-.github/prompts/                                   # slash-commands (/release, /add-tool, /security-review, ...)
+.github/prompts/                                   # slash-commands (/release, /add-tool, /security-review, /refine, ...)
+.github/skills/                                    # Agent Skills (SKILL.md) — model-decided, auto-discovered
 ```
 
 ## Dokumentacja

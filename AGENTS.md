@@ -18,7 +18,7 @@ Klient: **GitHub Copilot** w VS Code ≥ 1.121, IntelliJ ≥ 2026.1.2, Eclipse (
 - `.claude/` (workspace Claude Code: agents, commands, hooks, skills, settings)
 - `.ai/` (kanoniczna wiedza AI — rules, agents, workflows, prompts)
 
-Single source of truth dla agentów: ten `AGENTS.md` + [`.github/copilot-instructions.md`](.github/copilot-instructions.md) + [`.github/instructions/`](.github/instructions/) + [`.github/prompts/`](.github/prompts/) + [`.github/chatmodes/`](.github/chatmodes/).
+Single source of truth dla agentów: ten `AGENTS.md` + [`.github/copilot-instructions.md`](.github/copilot-instructions.md) + [`.github/instructions/`](.github/instructions/) + [`.github/prompts/`](.github/prompts/) + [`.github/chatmodes/`](.github/chatmodes/) + [`.github/skills/`](.github/skills/).
 
 > Uwaga: inne MCP hosty (Claude Desktop, Cursor, custom Agent SDK) mogą **konsumować** uruchomione serwery MCP zgodnie ze standardem MCP — to inna sprawa niż konfiguracja dewelopmentu kodu repo.
 
@@ -59,7 +59,7 @@ Pełen rulebook → [`.github/copilot-instructions.md`](.github/copilot-instruct
 
 ### Power-user shortcuts
 
-Slash-commands w [`.github/prompts/`](.github/prompts/) (`/add-tool`, `/new-connector`, `/release`, `/security-review`) uruchamiają konkretną ścieżkę bez przechodzenia przez orchestratora — dla power userów którzy wiedzą co chcą.
+Slash-commands w [`.github/prompts/`](.github/prompts/) (`/add-tool`, `/new-connector`, `/release`, `/security-review`, `/refine`) uruchamiają konkretną ścieżkę bez przechodzenia przez orchestratora — dla power userów którzy wiedzą co chcą.
 
 VS Code wymaga `chat.modeFilesLocations` w [`.vscode/settings.json`](.vscode/settings.json) (chatmodes są discoverable automatycznie z `.github/chatmodes/`). Inne hosty MCP czytają `AGENTS.md` + `.github/copilot-instructions.md` jako fallback.
 

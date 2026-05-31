@@ -29,6 +29,7 @@ to jest źródło prawdy, ten dokument jest wygodnym indeksem.
 | `jira.bulk_get_issues`   | read  | Wiele issues w jednej rundzie (do 50).                                      |
 | `jira.approximate_count` | read  | Szacowana liczba wyników JQL (tańsza od pełnego search).                    |
 | `jira.list_projects`     | read  | Wszystkie projekty widoczne dla tokenu.                                     |
+| `jira.list_versions`     | read  | Fix-versions / releases projektu (newest first); filtr po statusie.         |
 | `jira.list_boards`       | read  | Agile boards (scrum/kanban); filtr po projekcie / typie / nazwie.           |
 | `jira.get_board_config`  | read  | Konfiguracja boardu — kolumny (→ statusy) + estimation field.               |
 | `jira.get_board_backlog` | read  | Backlog boardu — issues poza sprintami (kandydaci do sprintu).              |

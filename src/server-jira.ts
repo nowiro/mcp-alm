@@ -28,6 +28,7 @@ import { createJiraFieldRegistry } from './shared/field-registry.js';
 import { createNamedHttpClient } from './shared/http-client.js';
 import { reshapeJiraIssue, type CanonicalIssue } from './shared/jira-reshape.js';
 import { reshapeBoard, reshapeBoardConfig, reshapeSprint } from './shared/jira-agile-reshape.js';
+import { reshapeVersion } from './shared/jira-version-reshape.js';
 import { compileJqlFilter, JqlFilterSchema } from './shared/jql-builder.js';
 import {
   bootMcpServerIfEnabled,
@@ -127,6 +128,16 @@ const GetBoardBacklogInput = z.object({
   limit: z.number().int().min(1).max(100).default(50),
   budgetTokens: z.number().int().min(500).max(80_000).default(DEFAULT_BUDGET_TOKENS),
   fields: z.array(z.string().min(1)).optional(),
+});
+const ListVersionsInput = z.object({
+  projectKey: ProjectKey,
+  /** Filter by release status; omit for all. Joined comma-separated upstream. */
+  status: z
+    .array(z.enum(['released', 'unreleased', 'archived']))
+    .min(1)
+    .max(3)
+    .optional(),
+  limit: z.number().int().min(1).max(50).default(50),
 });
 
 const CreateIssueInput = z.object({
@@ -313,6 +324,25 @@ const tools: ToolDefinition[] = [
         correlationId: ctx.correlationId,
         tool: ctx.tool,
       });
+    },
+  }),
+  defineTool({
+    name: 'jira.list_versions',
+    description:
+      'List fix-versions / releases for a project (newest first). Optional `status` filter (released | unreleased | archived). Returns `{ versions, isLast }` — canonical `{ id, name, released, archived, releaseDate?, startDate?, description?, overdue? }`. Use a version `name` in JQL via `fixVersion = "1.2.0"`.',
+    inputSchema: ListVersionsInput,
+    async handle({ projectKey, status, limit }, ctx) {
+      const raw = await http.request<{ values?: readonly Parameters<typeof reshapeVersion>[0][]; isLast?: boolean }>({
+        path: `/rest/api/3/project/${projectKey}/version`,
+        query: {
+          maxResults: limit,
+          orderBy: '-sequence',
+          ...(status ? { status: status.join(',') } : {}),
+        },
+        correlationId: ctx.correlationId,
+        tool: ctx.tool,
+      });
+      return { versions: (raw.values ?? []).map((v) => reshapeVersion(v)), isLast: raw.isLast ?? true };
     },
   }),
   defineTool({

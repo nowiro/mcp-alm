@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { reshapeBoard, reshapeSprint } from './jira-agile-reshape.js';
+import { reshapeBoard, reshapeBoardConfig, reshapeSprint } from './jira-agile-reshape.js';
 
 describe('reshapeBoard', () => {
   it('keeps id, name, type and flattens location.projectKey / projectName', () => {
@@ -101,5 +101,55 @@ describe('reshapeSprint', () => {
 
   it('defaults missing id/name/state to safe primitives', () => {
     expect(reshapeSprint({})).toEqual({ id: 0, name: '', state: '' });
+  });
+});
+
+describe('reshapeBoardConfig', () => {
+  it('extracts estimation field + columns with mapped status ids', () => {
+    const out = reshapeBoardConfig({
+      id: 10,
+      name: 'PROJ board',
+      type: 'scrum',
+      columnConfig: {
+        columns: [
+          { name: 'To Do', statuses: [{ id: '10000' }, { id: '3' }] },
+          { name: 'Done', statuses: [{ id: '10001' }] },
+        ],
+      },
+      estimation: { field: { fieldId: 'customfield_10016', displayName: 'Story Points' } },
+    });
+    expect(out).toEqual({
+      id: 10,
+      name: 'PROJ board',
+      type: 'scrum',
+      estimationField: { id: 'customfield_10016', name: 'Story Points' },
+      columns: [
+        { name: 'To Do', statusIds: ['10000', '3'] },
+        { name: 'Done', statusIds: ['10001'] },
+      ],
+    });
+  });
+
+  it('omits estimationField when the board has no estimation', () => {
+    const out = reshapeBoardConfig({ id: 1, name: 'Kanban', type: 'kanban', columnConfig: { columns: [] } });
+    expect('estimationField' in out).toBe(false);
+    expect(out.columns).toEqual([]);
+  });
+
+  it('keeps a column with no statuses as an empty statusIds array and drops blank status ids', () => {
+    const out = reshapeBoardConfig({
+      id: 2,
+      name: 'B',
+      type: 'scrum',
+      columnConfig: { columns: [{ name: 'Backlog' }, { name: 'Doing', statuses: [{ id: '' }, { id: '5' }] }] },
+    });
+    expect(out.columns).toEqual([
+      { name: 'Backlog', statusIds: [] },
+      { name: 'Doing', statusIds: ['5'] },
+    ]);
+  });
+
+  it('defaults missing id/name/type and yields empty columns', () => {
+    expect(reshapeBoardConfig({})).toEqual({ id: 0, name: '', type: '', columns: [] });
   });
 });

@@ -26,13 +26,13 @@ tokenów, z **deny-by-default** dla zapisów i pełnym, audytowalnym śladem
 
 ## Co dostajesz
 
-| Serwer           | Narzędzia odczytu                                                                                                                                                                                                                                     | Narzędzia zapisu (opt-in, bramkowane)                                                                 |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `mcp-jira`       | `get_issue`, `search_issues`, `bulk_get_issues`, `approximate_count`, `list_projects`, `list_boards`, `list_sprints`, `get_sprint`, `get_sprint_issues`, `list_transitions`, `get_comments`, `get_worklogs`, `get_changelog`, `jql_builder`, `health` | `create_issue`, `bulk_create_issues`, `transition_issue`, `add_comment`, `add_worklog`, `link_issues` |
-| `mcp-confluence` | `get_page`, `search_pages`, `search_pages_by_label`, `list_spaces`, `list_children`, `list_ancestors`, `get_attachments`, `get_comments`, `health`                                                                                                    | `add_comment`, `create_page`, `update_page`, `attach_file`                                            |
-| `mcp-figma`      | `get_file`, `get_file_nodes`, `get_image_urls`, `get_comments`, `list_team_projects`, `list_project_files`, `get_team_components`, `get_team_styles`, `export_tokens`, `health`                                                                       | (REST Figmy jest read-only)                                                                           |
-| `mcp-sonar`      | `quality_gate`, `get_quality_gate_diff`, `list_issues`, `list_hotspots`, `get_hotspot`, `list_projects`, `measures`, `health`                                                                                                                         | (read-only z polityki)                                                                                |
-| `mcp-gitlab`     | `get_mr`, `list_mrs`, `list_issues`, `list_pipelines`, `get_pipeline_jobs`, `get_job_log`, `merge_request_changes`, `get_artifacts`, `get_commit`, `list_branches`, `get_file_content`, `health`                                                      | `create_issue`, `create_mr`, `merge_mr`                                                               |
+| Serwer           | Narzędzia odczytu                                                                                                                                                                                                                                                         | Narzędzia zapisu (opt-in, bramkowane)                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `mcp-jira`       | `get_issue`, `search_issues`, `bulk_get_issues`, `approximate_count`, `list_projects`, `list_boards`, `list_sprints`, `get_sprint`, `get_sprint_issues`, `get_board_config`, `list_transitions`, `get_comments`, `get_worklogs`, `get_changelog`, `jql_builder`, `health` | `create_issue`, `bulk_create_issues`, `transition_issue`, `add_comment`, `add_worklog`, `link_issues` |
+| `mcp-confluence` | `get_page`, `search_pages`, `search_pages_by_label`, `list_spaces`, `list_children`, `list_ancestors`, `get_attachments`, `get_comments`, `health`                                                                                                                        | `add_comment`, `create_page`, `update_page`, `attach_file`                                            |
+| `mcp-figma`      | `get_file`, `get_file_nodes`, `get_image_urls`, `get_comments`, `list_team_projects`, `list_project_files`, `get_team_components`, `get_team_styles`, `export_tokens`, `health`                                                                                           | (REST Figmy jest read-only)                                                                           |
+| `mcp-sonar`      | `quality_gate`, `get_quality_gate_diff`, `list_issues`, `list_hotspots`, `get_hotspot`, `list_projects`, `measures`, `health`                                                                                                                                             | (read-only z polityki)                                                                                |
+| `mcp-gitlab`     | `get_mr`, `list_mrs`, `list_issues`, `list_pipelines`, `get_pipeline_jobs`, `get_job_log`, `merge_request_changes`, `get_artifacts`, `get_commit`, `list_branches`, `get_file_content`, `health`                                                                          | `create_issue`, `create_mr`, `merge_mr`                                                               |
 
 Każdy serwer wystawia też `<server>.get_usage_history` — in-memory ledger
 wywołań narzędzi (rozmiary input / output, latencja, estymata tokenów), żeby
@@ -222,7 +222,7 @@ Repo wystawia **jeden widoczny custom chat mode** w VS Code Copilot — `orchest
 
 1. Otwórz Copilot Chat (`Ctrl+Alt+I` lub `Cmd+Ctrl+I`).
 2. Z dropdownu trybu wybierz `orchestrator`.
-3. Opisz zadanie — np. _"Dodaj `jira.get_board_config` z parametrem `boardId`, zwraca kolumny + estimation field"_ albo _"Rozbij epic PROJ-100 na stories per INVEST z cut na 3 sprinty"_.
+3. Opisz zadanie — np. _"Dodaj `jira.list_versions` z parametrem `projectKey`, zwraca fix-versions / releases"_ albo _"Rozbij epic PROJ-100 na stories per INVEST z cut na 3 sprinty"_.
 4. Orchestrator dobiera personę (`connector-author` lub `epic-strategist` w przykładach powyżej), pisze plan, deleguje, walidacja przez DoD gate.
 
 Pełna mapa personas + decision tree: [`AGENTS.md`](AGENTS.md) i [`.github/agents/orchestrator.agent.md`](.github/agents/orchestrator.agent.md).
@@ -308,10 +308,10 @@ Dla najczęściej powtarzanych workflow z `.github/prompts/` repo dostarcza **de
 # Dodaj jeden tool do istniejącego connectora
 npm run workflow:add-tool -- \
   --connector=jira \
-  --tool=get_board_config \
-  --description="Board columns + estimation field configuration." \
+  --tool=list_versions \
+  --description="List a project's fix-versions / releases." \
   --type=read
-# → docs/runs/<date>-add-tool-jira-get_board_config.md
+# → docs/runs/<date>-add-tool-jira-list_versions.md
 #   z gotowym Zod snippet + defineTool block + CHANGELOG entry + README row.
 #   Następnie connector-author agent wkleja snippet do src/server-jira.ts.
 
@@ -361,7 +361,7 @@ npm run validate:inputs
 # → static check defineTool({...}) w każdym src/server-*.ts:
 #   name z prefixem servera, description literal, inputSchema (named ref), handle method.
 #   Wpięte w npm run verify — drift kontraktu blokuje commit.
-#   Obecny stan: 67/67 tools clean.
+#   Obecny stan: 68/68 tools clean.
 
 npm run token:budget
 # → scan Zod limits (.min/.max/.default) w server/extract files,

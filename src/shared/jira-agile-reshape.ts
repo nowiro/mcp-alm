@@ -33,6 +33,20 @@ export interface CanonicalSprint {
   readonly boardId?: number;
 }
 
+export interface CanonicalBoardColumn {
+  readonly name: string;
+  readonly statusIds: readonly string[];
+}
+
+export interface CanonicalBoardConfig {
+  readonly id: number;
+  readonly name: string;
+  readonly type: string;
+  /** Field the board estimates with — e.g. `{ id: 'customfield_10016', name: 'Story Points' }`. */
+  readonly estimationField?: { readonly id: string; readonly name: string };
+  readonly columns: readonly CanonicalBoardColumn[];
+}
+
 interface RawBoardLocation {
   readonly projectKey?: string;
   readonly projectName?: string;
@@ -54,6 +68,19 @@ interface RawSprint {
   readonly completeDate?: string;
   readonly originBoardId?: number;
   readonly goal?: string;
+}
+
+interface RawBoardColumn {
+  readonly name?: string;
+  readonly statuses?: readonly { readonly id?: string }[];
+}
+
+interface RawBoardConfig {
+  readonly id?: number;
+  readonly name?: string;
+  readonly type?: string;
+  readonly columnConfig?: { readonly columns?: readonly RawBoardColumn[] };
+  readonly estimation?: { readonly field?: { readonly fieldId?: string; readonly displayName?: string } };
 }
 
 /** Keep a string only when it is present and not blank — otherwise drop the key. */
@@ -96,5 +123,29 @@ export function reshapeSprint(raw: RawSprint): CanonicalSprint {
     ...(completeDate ? { completeDate } : {}),
     ...(goal ? { goal } : {}),
     ...(raw.originBoardId !== undefined ? { boardId: raw.originBoardId } : {}),
+  };
+}
+
+/**
+ * Reshape a board `configuration` payload to `{ id, name, type, estimationField?,
+ * columns }`. Surfaces the two things an agent needs for sprint reporting: the
+ * estimation field id (so story points can be read without guessing
+ * `customfield_NNNNN`) and the column → status mapping (status → board column).
+ */
+export function reshapeBoardConfig(raw: RawBoardConfig): CanonicalBoardConfig {
+  const fieldId = nonEmpty(raw.estimation?.field?.fieldId);
+  const fieldName = nonEmpty(raw.estimation?.field?.displayName);
+  const columns: CanonicalBoardColumn[] = (raw.columnConfig?.columns ?? []).map((col) => ({
+    name: col.name ?? '',
+    statusIds: (col.statuses ?? [])
+      .map((status) => status.id)
+      .filter((id): id is string => typeof id === 'string' && id !== ''),
+  }));
+  return {
+    id: raw.id ?? 0,
+    name: raw.name ?? '',
+    type: raw.type ?? '',
+    ...(fieldId ? { estimationField: { id: fieldId, name: fieldName ?? '' } } : {}),
+    columns,
   };
 }

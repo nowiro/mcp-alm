@@ -27,7 +27,7 @@ import { extract } from './shared/extract.js';
 import { createJiraFieldRegistry } from './shared/field-registry.js';
 import { createNamedHttpClient } from './shared/http-client.js';
 import { reshapeJiraIssue, type CanonicalIssue } from './shared/jira-reshape.js';
-import { reshapeBoard, reshapeSprint } from './shared/jira-agile-reshape.js';
+import { reshapeBoard, reshapeBoardConfig, reshapeSprint } from './shared/jira-agile-reshape.js';
 import { compileJqlFilter, JqlFilterSchema } from './shared/jql-builder.js';
 import {
   bootMcpServerIfEnabled,
@@ -119,6 +119,7 @@ const GetSprintIssuesInput = z.object({
   budgetTokens: z.number().int().min(500).max(80_000).default(DEFAULT_BUDGET_TOKENS),
   fields: z.array(z.string().min(1)).optional(),
 });
+const GetBoardConfigInput = z.object({ boardId: z.number().int().positive() });
 
 const CreateIssueInput = z.object({
   projectKey: ProjectKey,
@@ -380,6 +381,20 @@ const tools: ToolDefinition[] = [
         maxItems: limit,
       });
       return result.truncated ? markTruncated(result) : result;
+    },
+  }),
+  defineTool({
+    name: 'jira.get_board_config',
+    description:
+      'Board configuration — columns (name + mapped status ids) and the estimation field (e.g. `customfield_10016` "Story Points"). Feed `estimationField.id` into `fields` on `jira.get_sprint_issues` / `jira.search_issues` to read story points without guessing the custom-field id.',
+    inputSchema: GetBoardConfigInput,
+    async handle({ boardId }, ctx) {
+      const raw = await http.request<Parameters<typeof reshapeBoardConfig>[0]>({
+        path: `/rest/agile/1.0/board/${boardId}/configuration`,
+        correlationId: ctx.correlationId,
+        tool: ctx.tool,
+      });
+      return reshapeBoardConfig(raw);
     },
   }),
   defineTool({

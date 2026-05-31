@@ -10,7 +10,7 @@ Pięć serwerów MCP (stdio) dla narzędzi ALM, **read-first, write-guarded**. K
 
 ### Serwery i narzędzia
 
-- `mcp-jira`, `mcp-confluence`, `mcp-figma`, `mcp-sonar`, `mcp-gitlab` — ~67 narzędzi (read + write-guarded), każde z Zod I/O. `mcp-jira` pokrywa też Agile: `list_boards` / `list_sprints` / `get_sprint` / `get_sprint_issues`.
+- `mcp-jira`, `mcp-confluence`, `mcp-figma`, `mcp-sonar`, `mcp-gitlab` — ~68 narzędzi (read + write-guarded), każde z Zod I/O. `mcp-jira` pokrywa też Agile: `list_boards` / `list_sprints` / `get_sprint` / `get_sprint_issues` / `get_board_config`.
 - Druga bramka: deterministyczne skrypty `npm run extract:{jira,confluence,gitlab,sonar}` (snapshoty z committed configu).
 - MCP Resources (cheatsheety JQL / CQL / pipeline / severity / design-tokens) + response templates (LLM-agnostic).
 

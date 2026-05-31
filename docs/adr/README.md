@@ -34,6 +34,7 @@ superseded by NNNN`.
 | 0005 | [Natywny fetch, bez axios](0005-native-fetch-no-axios.md)                                      | accepted | 2026-05-08 |
 | 0006 | [Tier 3 write-guard: potwierdzenie nazwy zasobu](0006-resource-name-confirmation.md)           | accepted | 2026-05-22 |
 | 0007 | [Druga bramka nad `src/shared/`: pipeline ekstrakcji](0007-extract-pipeline-second-gateway.md) | accepted | 2026-05-22 |
+| 0008 | [Brak memory-MCP w stacku](0008-no-memory-mcp.md)                                              | accepted | 2026-05-31 |
 
 ## Konwencje
 

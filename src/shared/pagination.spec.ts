@@ -155,3 +155,48 @@ describe('cursorAdapter', () => {
     expect(calls).toBe(3);
   });
 });
+
+describe('iterate — parallel (concurrency > 1 + nextCursor)', () => {
+  it('collects all items in order with concurrency=3', async () => {
+    const fetchPage = makePages([[1, 2], [3, 4], [5, 6], [7]]);
+    const all = await collect({ fetchPage, concurrency: 3, nextCursor: (_c, n) => n });
+    expect(all).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  });
+
+  it('stops when nextCursor returns undefined', async () => {
+    const fetchPage = makePages([[1], [2], [3], [4], [5]]);
+    const all = await collect({ fetchPage, concurrency: 2, nextCursor: (_c, n) => (n < 2 ? n : undefined) });
+    expect(all).toEqual([1, 2]);
+  });
+
+  it('honours maxItems cap in parallel mode', async () => {
+    const fetchPage = makePages([
+      [1, 2],
+      [3, 4],
+      [5, 6],
+    ]);
+    const all = await collect({ fetchPage, concurrency: 3, nextCursor: (_c, n) => n, maxItems: 3 });
+    expect(all).toEqual([1, 2, 3, 4]); // stops after the page that crosses maxItems
+  });
+
+  it('stops on budget exceeded in parallel mode', async () => {
+    const fetchPage = makePages([
+      [1, 2],
+      [3, 4],
+      [5, 6],
+    ]);
+    const tracker = new BudgetTracker(10);
+    const all: number[] = [];
+    for await (const page of iterate({ fetchPage, concurrency: 3, nextCursor: (_c, n) => n, budget: tracker })) {
+      all.push(...page.items);
+      tracker.consumeTokens(20);
+    }
+    expect(all).toEqual([1, 2]);
+  });
+
+  it('falls back to sequential when concurrency > 1 but nextCursor is absent', async () => {
+    const fetchPage = makePages([[1], [2]]);
+    const all = await collect({ fetchPage, concurrency: 4 });
+    expect(all).toEqual([1, 2]);
+  });
+});

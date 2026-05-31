@@ -783,14 +783,21 @@ const prompts: PromptDefinition[] = [
   }),
   definePrompt({
     name: 'jira.sprint-summary',
-    description: 'Summarize current active sprint: stories with status, assignee, story points.',
+    description: 'Summarize the active sprint via the agile tools (board → config → sprint → issues), with velocity.',
     arguments: [{ name: 'projectKey', description: 'Jira project key (e.g. PROJ)', required: true }],
     buildMessages: (args) => [
       {
         role: 'user',
         content: {
           type: 'text',
-          text: `Dla projektu ${args['projectKey']}: użyj \`jira.search_issues\` z JQL \`project = ${args['projectKey']} AND sprint in openSprints()\`, fields ["summary","status","assignee","customfield_10016"]. Zgrupuj wyniki per status (To Do, In Progress, Done). Podsumuj velocity (sum story points done).`,
+          text:
+            `Podsumuj aktywny sprint projektu ${args['projectKey']} — użyj pierwszorzędnych narzędzi agile:\n` +
+            `1. \`jira.list_boards\` z \`projectKeyOrId: "${args['projectKey']}"\` → weź id boardu scrum.\n` +
+            `2. \`jira.get_board_config\` z tym \`boardId\` → odczytaj \`estimationField.id\` (pole story-pointów, np. customfield_10016).\n` +
+            `3. \`jira.list_sprints\` z \`boardId\`, \`state: ["active"]\` → weź \`id\` aktywnego sprintu.\n` +
+            `4. \`jira.get_sprint_issues\` z tym \`sprintId\` i \`fields: ["summary","status","assignee", <estimationField.id>]\`.\n` +
+            `Zgrupuj per status (To Do / In Progress / Done) i podsumuj velocity (suma story-pointów w Done). ` +
+            `Fallback gdy brak boardu scrum: \`jira.search_issues\` z JQL \`project = ${args['projectKey']} AND sprint in openSprints()\`.`,
         },
       },
     ],

@@ -27,6 +27,7 @@ import { extract } from './shared/extract.js';
 import { createJiraFieldRegistry } from './shared/field-registry.js';
 import { createNamedHttpClient } from './shared/http-client.js';
 import { reshapeJiraIssue, type CanonicalIssue } from './shared/jira-reshape.js';
+import { reshapeBoard, reshapeSprint } from './shared/jira-agile-reshape.js';
 import { compileJqlFilter, JqlFilterSchema } from './shared/jql-builder.js';
 import {
   bootMcpServerIfEnabled,
@@ -86,6 +87,30 @@ const GetChangelogInput = z.object({
 const ApproximateCountInput = z.object({ jql: z.string().min(1) });
 const HealthInput = z.object({});
 const JqlBuilderInput = z.object({ filter: JqlFilterSchema });
+
+const ListBoardsInput = z.object({
+  /** Scope to one project — accepts a key (`PROJ`) or a numeric project id. */
+  projectKeyOrId: z.string().min(1).optional(),
+  type: z.enum(['scrum', 'kanban', 'simple']).optional(),
+  /** Case-insensitive substring match on the board name (upstream filter). */
+  name: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(50).default(50),
+});
+const ListSprintsInput = z.object({
+  boardId: z.number().int().positive(),
+  /**
+   * Sprint states to include. Defaults to active + future so a board with
+   * years of closed sprints does not blow the token budget — pass `closed`
+   * explicitly for history.
+   */
+  state: z
+    .array(z.enum(['active', 'future', 'closed']))
+    .min(1)
+    .max(3)
+    .default(['active', 'future']),
+  limit: z.number().int().min(1).max(50).default(50),
+});
+const GetSprintInput = z.object({ sprintId: z.number().int().positive() });
 
 const CreateIssueInput = z.object({
   projectKey: ProjectKey,
@@ -171,6 +196,12 @@ interface JqlSearchResponse {
   readonly isLast?: boolean;
 }
 
+/** Jira Agile (`/rest/agile/1.0/`) paged envelope — offset-based, `values` + `isLast`. */
+interface AgileListResponse<T> {
+  readonly values?: readonly T[];
+  readonly isLast?: boolean;
+}
+
 const tools: ToolDefinition[] = [
   defineTool({
     name: 'jira.get_issue',
@@ -252,6 +283,55 @@ const tools: ToolDefinition[] = [
         correlationId: ctx.correlationId,
         tool: ctx.tool,
       });
+    },
+  }),
+  defineTool({
+    name: 'jira.list_boards',
+    description:
+      'List Jira Agile boards (Scrum/Kanban) the token can see. Filter by `projectKeyOrId`, `type` (scrum|kanban|simple), or `name` substring. Returns canonical `{ id, name, type, projectKey?, projectName? }` plus `isLast`. Feed a board id into `jira.list_sprints`.',
+    inputSchema: ListBoardsInput,
+    async handle({ projectKeyOrId, type, name, limit }, ctx) {
+      const raw = await http.request<AgileListResponse<Parameters<typeof reshapeBoard>[0]>>({
+        path: '/rest/agile/1.0/board',
+        query: {
+          maxResults: limit,
+          ...(projectKeyOrId ? { projectKeyOrId } : {}),
+          ...(type ? { type } : {}),
+          ...(name ? { name } : {}),
+        },
+        correlationId: ctx.correlationId,
+        tool: ctx.tool,
+      });
+      return { boards: (raw.values ?? []).map((b) => reshapeBoard(b)), isLast: raw.isLast ?? true };
+    },
+  }),
+  defineTool({
+    name: 'jira.list_sprints',
+    description:
+      'List sprints on a board. `state` defaults to ["active","future"] — closed sprints are excluded unless requested (a board can carry years of them). Returns canonical `{ id, name, state, startDate?, endDate?, completeDate?, goal?, boardId? }` plus `isLast`. Get the board id from `jira.list_boards`.',
+    inputSchema: ListSprintsInput,
+    async handle({ boardId, state, limit }, ctx) {
+      const raw = await http.request<AgileListResponse<Parameters<typeof reshapeSprint>[0]>>({
+        path: `/rest/agile/1.0/board/${boardId}/sprint`,
+        query: { maxResults: limit, state: state.join(',') },
+        correlationId: ctx.correlationId,
+        tool: ctx.tool,
+      });
+      return { sprints: (raw.values ?? []).map((s) => reshapeSprint(s)), isLast: raw.isLast ?? true };
+    },
+  }),
+  defineTool({
+    name: 'jira.get_sprint',
+    description:
+      'Fetch one sprint by id — canonical `{ id, name, state, startDate?, endDate?, completeDate?, goal?, boardId? }`. Pairs with the `jira.sprint-summary` prompt for velocity reporting.',
+    inputSchema: GetSprintInput,
+    async handle({ sprintId }, ctx) {
+      const raw = await http.request<Parameters<typeof reshapeSprint>[0]>({
+        path: `/rest/agile/1.0/sprint/${sprintId}`,
+        correlationId: ctx.correlationId,
+        tool: ctx.tool,
+      });
+      return reshapeSprint(raw);
     },
   }),
   defineTool({

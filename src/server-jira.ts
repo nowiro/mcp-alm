@@ -194,6 +194,13 @@ const BulkCreateIssuesInput = z.object({
   dryRun: z.boolean().default(false),
 });
 
+const MoveIssuesToSprintInput = z.object({
+  sprintId: z.number().int().positive(),
+  /** Issue keys to move into the sprint. Max 50 per call (upstream cap). */
+  keys: z.array(IssueKey).min(1).max(50),
+  dryRun: z.boolean().default(false),
+});
+
 const auth = loadJiraAuth();
 const http = createNamedHttpClient(SERVER_NAME, auth);
 const registry = createJiraFieldRegistry(http);
@@ -735,6 +742,20 @@ if (isWriteEnabled()) {
           correlationId: ctx.correlationId,
           tool: ctx.tool,
         });
+      },
+    }),
+    defineTool({
+      name: 'jira.move_issues_to_sprint',
+      description:
+        'Move issues into a sprint (write — requires MCP_WRITE_ALLOWLIST entry). Up to 50 keys per call via POST /rest/agile/1.0/sprint/{id}/issue (non-destructive — issues are re-parented, not deleted). `dryRun: true` echoes the request without hitting upstream.',
+      inputSchema: MoveIssuesToSprintInput,
+      async handle({ sprintId, keys, dryRun }, ctx) {
+        assertWriteAllowed(ctx.tool);
+        const path = `/rest/agile/1.0/sprint/${sprintId}/issue`;
+        const body = { issues: keys };
+        if (dryRun) return { dryRun: true, method: 'POST', path, body };
+        await http.request({ method: 'POST', path, body, correlationId: ctx.correlationId, tool: ctx.tool });
+        return { ok: true, sprintId, moved: keys.length, keys };
       },
     }),
   );

@@ -44,3 +44,10 @@ extract.config.jira.json
 extract.config.confluence.json
 extract.config.gitlab.json
 extract.config.sonar.json
+
+# Task working artifacts — plan-first plans, specs and run/report outputs are
+# kept LOCAL only, never committed (project decision). The workflow:* scaffold
+# scripts recreate these dirs on demand.
+/docs/plans/
+/docs/specs/
+/docs/runs/

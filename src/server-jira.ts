@@ -120,6 +120,14 @@ const GetSprintIssuesInput = z.object({
   fields: z.array(z.string().min(1)).optional(),
 });
 const GetBoardConfigInput = z.object({ boardId: z.number().int().positive() });
+const GetBoardBacklogInput = z.object({
+  boardId: z.number().int().positive(),
+  /** Optional JQL to narrow the backlog (e.g. `labels = tech-debt`). */
+  jql: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).default(50),
+  budgetTokens: z.number().int().min(500).max(80_000).default(DEFAULT_BUDGET_TOKENS),
+  fields: z.array(z.string().min(1)).optional(),
+});
 
 const CreateIssueInput = z.object({
   projectKey: ProjectKey,
@@ -395,6 +403,40 @@ const tools: ToolDefinition[] = [
         tool: ctx.tool,
       });
       return reshapeBoardConfig(raw);
+    },
+  }),
+  defineTool({
+    name: 'jira.get_board_backlog',
+    description:
+      'List backlog issues for a board — issues NOT in any sprint (the candidates to pull into one) via /rest/agile/1.0/board/{id}/backlog. Budget-aware offset pagination; optional `jql` + `fields`. Returns `{ items, truncated, next? }` canonical issue shapes. Complements `jira.get_sprint_issues` (in-sprint).',
+    inputSchema: GetBoardBacklogInput,
+    async handle({ boardId, jql, limit, budgetTokens, fields }, ctx) {
+      const budget = new BudgetTracker(budgetTokens);
+      const projection = (fields ?? DEFAULT_FIELDS).join(',');
+      const fetchPage = jiraOffsetAdapter<CanonicalIssue, AgileIssueSearchResponse>(
+        async ({ startAt, maxResults }) =>
+          http.request<AgileIssueSearchResponse>({
+            path: `/rest/agile/1.0/board/${boardId}/backlog`,
+            query: {
+              startAt,
+              maxResults,
+              fields: projection,
+              ...(jql ? { jql } : {}),
+            },
+            correlationId: ctx.correlationId,
+            tool: ctx.tool,
+          }),
+        (raw) => raw.issues.map((i) => reshapeJiraIssue(i, registry)),
+        (raw) => raw.total,
+        Math.min(50, limit),
+      );
+      const result = await extract<CanonicalIssue, CanonicalIssue>({
+        fetchPage,
+        reshape: (item) => item,
+        budget,
+        maxItems: limit,
+      });
+      return result.truncated ? markTruncated(result) : result;
     },
   }),
   defineTool({

@@ -35,15 +35,15 @@ protokołu MCP.
 Dla nich nie ma env vars — żyją jako wkompilowane defaulty w schematach
 narzędzi. Wywołujący nadpisują per-call przez udokumentowany parametr.
 
-| Narzędzie                                    | Parametr       | Default           | Override                   |
-| -------------------------------------------- | -------------- | ----------------- | -------------------------- |
-| `jira.search_issues`, `jira.bulk_get_issues` | `budgetTokens` | `2 500`           | 500 – 80 000               |
-| `jira.search_issues`, `jira.get_issue`       | `fields`       | system projection | tablica field id Jira      |
-| `confluence.search_pages`                    | `budgetTokens` | `2 500`           | 500 – 80 000               |
-| `confluence.get_page`                        | `maxChars`     | `5 000`           | 500 – 200 000              |
-| `confluence.get_page`                        | `mode`         | `'full'`          | `'summary'`                |
-| `gitlab.merge_request_changes`               | `include_diff` | `false`           | `true` żeby embedować diff |
-| `gitlab.list_mrs`                            | `mode`         | `'full'`          | `'summary'`                |
+| Narzędzie                                                                                        | Parametr       | Default           | Override                   |
+| ------------------------------------------------------------------------------------------------ | -------------- | ----------------- | -------------------------- |
+| `jira.search_issues`, `jira.bulk_get_issues`, `jira.get_sprint_issues`, `jira.get_board_backlog` | `budgetTokens` | `2 500`           | 500 – 80 000               |
+| `jira.search_issues`, `jira.get_issue`, `jira.get_sprint_issues`, `jira.get_board_backlog`       | `fields`       | system projection | tablica field id Jira      |
+| `confluence.search_pages`                                                                        | `budgetTokens` | `2 500`           | 500 – 80 000               |
+| `confluence.get_page`                                                                            | `maxChars`     | `5 000`           | 500 – 200 000              |
+| `confluence.get_page`                                                                            | `mode`         | `'full'`          | `'summary'`                |
+| `gitlab.merge_request_changes`                                                                   | `include_diff` | `false`           | `true` żeby embedować diff |
+| `gitlab.list_mrs`                                                                                | `mode`         | `'full'`          | `'summary'`                |
 
 In-memory session ledger (`*.get_usage_history`) ma hard cap 1 000 records
 (FIFO eviction). Cap nie jest konfigurowalny — bound by design.

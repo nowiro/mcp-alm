@@ -33,13 +33,19 @@ const REDACTION_KEYS = new Set([
   'token',
   'accesstoken',
   'refreshtoken',
+  'privatetoken', // GitLab `PRIVATE-TOKEN` header
+  'sessiontoken',
+  'idtoken',
   'secret',
+  'clientsecret',
   'password',
   'apikey',
   'privatekey',
   'authorization',
+  'credentials',
   'cookie',
   'xapikey',
+  'xauthtoken',
 ]);
 
 function shouldRedact(key: string): boolean {

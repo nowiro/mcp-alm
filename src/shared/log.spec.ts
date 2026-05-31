@@ -113,4 +113,28 @@ describe('log.createLogger', () => {
     expect(headers['Authorization']).toBe('[Redacted]');
     expect(details['repo']).toBe('owner/repo'); // not redacted — verifies we don't over-redact
   });
+
+  it('redacts GitLab PRIVATE-TOKEN and other credential keys (separator/case tolerant)', () => {
+    const log = createLogger({ server: 'mcp-test', version: '1.0.0' });
+    log.log({
+      msg: 'sample',
+      'PRIVATE-TOKEN': 'glpat-xxx',
+      private_token: 'glpat-yyy',
+      clientSecret: 'cs-123',
+      'X-Auth-Token': 'xat-1',
+      sessionToken: 'st-1',
+      idToken: 'it-1',
+      credentials: { user: 'a', pass: 'b' },
+      branch: 'main', // benign — must pass through
+    });
+    const line = firstLine();
+    expect(line['PRIVATE-TOKEN']).toBe('[Redacted]');
+    expect(line['private_token']).toBe('[Redacted]');
+    expect(line['clientSecret']).toBe('[Redacted]');
+    expect(line['X-Auth-Token']).toBe('[Redacted]');
+    expect(line['sessionToken']).toBe('[Redacted]');
+    expect(line['idToken']).toBe('[Redacted]');
+    expect(line['credentials']).toBe('[Redacted]');
+    expect(line['branch']).toBe('main');
+  });
 });

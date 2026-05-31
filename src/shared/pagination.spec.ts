@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { BudgetTracker } from './budget.js';
-import { collect, cursorAdapter, iterate, jiraJqlCursorAdapter, type Page } from './pagination.js';
+import { collect, cursorAdapter, iterate, jiraJqlCursorAdapter, jiraOffsetAdapter, type Page } from './pagination.js';
 
 function makePages<T>(pages: ReadonlyArray<readonly T[]>): (cursor: string | number | undefined) => Promise<Page<T>> {
   return async (cursor) => {
@@ -121,6 +121,67 @@ describe('jiraJqlCursorAdapter', () => {
       all.push(...page.items);
     }
     expect(all).toEqual([1, 2]);
+  });
+});
+
+describe('jiraOffsetAdapter', () => {
+  it('advances startAt by returned count until total is reached', async () => {
+    interface OffsetPage {
+      issues: number[];
+      total: number;
+    }
+    const pages: Record<number, OffsetPage> = {
+      0: { issues: [1, 2], total: 5 },
+      2: { issues: [3, 4], total: 5 },
+      4: { issues: [5], total: 5 },
+    };
+    let calls = 0;
+    const fetchOnce = async (params: { startAt: number; maxResults: number }): Promise<OffsetPage> => {
+      calls += 1;
+      return Promise.resolve(pages[params.startAt] ?? { issues: [], total: 5 });
+    };
+    const adapter = jiraOffsetAdapter(
+      fetchOnce,
+      (raw) => raw.issues,
+      (raw) => raw.total,
+      2,
+    );
+    const all: number[] = [];
+    for await (const page of iterate({ fetchPage: adapter })) {
+      all.push(...page.items);
+    }
+    expect(all).toEqual([1, 2, 3, 4, 5]);
+    expect(calls).toBe(3);
+  });
+
+  it('stops on a short page when total is absent', async () => {
+    const fetchOnce = async (params: { startAt: number; maxResults: number }): Promise<{ issues: number[] }> =>
+      Promise.resolve({ issues: params.startAt === 0 ? [1, 2, 3] : [] });
+    const adapter = jiraOffsetAdapter(
+      fetchOnce,
+      (raw) => raw.issues,
+      () => undefined,
+      5,
+    );
+    const all: number[] = [];
+    for await (const page of iterate({ fetchPage: adapter, maxPages: 5 })) {
+      all.push(...page.items);
+    }
+    expect(all).toEqual([1, 2, 3]);
+  });
+
+  it('terminates on an empty first page without looping', async () => {
+    const adapter = jiraOffsetAdapter(
+      () => Promise.resolve({ issues: [] as number[], total: 0 }),
+      (raw) => raw.issues,
+      (raw) => raw.total,
+      2,
+    );
+    const all: number[] = [];
+    for await (const page of iterate({ fetchPage: adapter, maxPages: 5 })) {
+      all.push(...page.items);
+    }
+    expect(all).toEqual([]);
   });
 });
 

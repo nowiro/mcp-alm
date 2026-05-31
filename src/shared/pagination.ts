@@ -251,3 +251,28 @@ export function jiraJqlCursorAdapter<T, Raw extends { nextPageToken?: string; is
     };
   };
 }
+
+/**
+ * Jira Agile (`/rest/agile/1.0/`) offset pagination — `{ startAt, maxResults,
+ * total, issues | values }`. Unlike `/search/jql` (cursor), the agile endpoints
+ * still page by numeric offset. The adapter advances `startAt` by the number of
+ * items actually returned and stops once `startAt + returned >= total`; when the
+ * response omits `total` it stops on the first short page. An empty page always
+ * terminates (the `items.length > 0` guard rules out an infinite loop).
+ */
+export function jiraOffsetAdapter<T, Raw>(
+  fetchOnce: (params: { startAt: number; maxResults: number }) => Promise<Raw>,
+  pickItems: (raw: Raw) => readonly T[],
+  pickTotal: (raw: Raw) => number | undefined,
+  pageSize = 50,
+): FetchPage<T> {
+  return async (cursor) => {
+    const startAt = typeof cursor === 'number' ? cursor : 0;
+    const raw = await fetchOnce({ startAt, maxResults: pageSize });
+    const items = pickItems(raw);
+    const consumed = startAt + items.length;
+    const total = pickTotal(raw);
+    const hasMore = total !== undefined ? consumed < total : items.length === pageSize;
+    return { items, next: hasMore && items.length > 0 ? consumed : undefined };
+  };
+}

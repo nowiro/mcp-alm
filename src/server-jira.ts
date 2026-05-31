@@ -38,7 +38,7 @@ import {
 } from './shared/mcp-server.js';
 import { definePrompt, type PromptDefinition } from './shared/prompt.js';
 import { defineMarkdownResource, type ResourceDefinition } from './shared/resource.js';
-import { jiraJqlCursorAdapter } from './shared/pagination.js';
+import { jiraJqlCursorAdapter, jiraOffsetAdapter } from './shared/pagination.js';
 import { assertWriteAllowed, isWriteEnabled } from './shared/write-guard.js';
 import { adfToMarkdown, type AdfNode } from './shared/adf.js';
 
@@ -111,6 +111,14 @@ const ListSprintsInput = z.object({
   limit: z.number().int().min(1).max(50).default(50),
 });
 const GetSprintInput = z.object({ sprintId: z.number().int().positive() });
+const GetSprintIssuesInput = z.object({
+  sprintId: z.number().int().positive(),
+  /** Optional JQL to narrow within the sprint (e.g. `assignee = currentUser()`). */
+  jql: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(100).default(50),
+  budgetTokens: z.number().int().min(500).max(80_000).default(DEFAULT_BUDGET_TOKENS),
+  fields: z.array(z.string().min(1)).optional(),
+});
 
 const CreateIssueInput = z.object({
   projectKey: ProjectKey,
@@ -200,6 +208,12 @@ interface JqlSearchResponse {
 interface AgileListResponse<T> {
   readonly values?: readonly T[];
   readonly isLast?: boolean;
+}
+
+/** Agile `/sprint/{id}/issue` envelope — offset-based, `issues` + `total`. */
+interface AgileIssueSearchResponse {
+  readonly issues: readonly JiraIssueRaw[];
+  readonly total?: number;
 }
 
 const tools: ToolDefinition[] = [
@@ -332,6 +346,40 @@ const tools: ToolDefinition[] = [
         tool: ctx.tool,
       });
       return reshapeSprint(raw);
+    },
+  }),
+  defineTool({
+    name: 'jira.get_sprint_issues',
+    description:
+      'List issues in a sprint via /rest/agile/1.0/sprint/{id}/issue with budget-aware offset pagination (default 2,500 tokens, max 80,000). Optional `jql` narrows within the sprint; `fields` narrows the upstream projection. Returns `{ items, truncated, next? }` — canonical issue shapes (readable custom fields + Markdown description), so velocity / status rollups read straight off the result.',
+    inputSchema: GetSprintIssuesInput,
+    async handle({ sprintId, jql, limit, budgetTokens, fields }, ctx) {
+      const budget = new BudgetTracker(budgetTokens);
+      const projection = (fields ?? DEFAULT_FIELDS).join(',');
+      const fetchPage = jiraOffsetAdapter<CanonicalIssue, AgileIssueSearchResponse>(
+        async ({ startAt, maxResults }) =>
+          http.request<AgileIssueSearchResponse>({
+            path: `/rest/agile/1.0/sprint/${sprintId}/issue`,
+            query: {
+              startAt,
+              maxResults,
+              fields: projection,
+              ...(jql ? { jql } : {}),
+            },
+            correlationId: ctx.correlationId,
+            tool: ctx.tool,
+          }),
+        (raw) => raw.issues.map((i) => reshapeJiraIssue(i, registry)),
+        (raw) => raw.total,
+        Math.min(50, limit),
+      );
+      const result = await extract<CanonicalIssue, CanonicalIssue>({
+        fetchPage,
+        reshape: (item) => item,
+        budget,
+        maxItems: limit,
+      });
+      return result.truncated ? markTruncated(result) : result;
     },
   }),
   defineTool({

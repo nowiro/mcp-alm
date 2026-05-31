@@ -31,12 +31,12 @@ export default defineConfig({
         'src/server-*.ts',
       ],
       thresholds: {
-        // Niskie progi startowe — podnieść po zmierzeniu baseline.
-        // Cel: shared/ ≥ 80%, całość ≥ 70%.
-        lines: 50,
-        functions: 50,
-        branches: 50,
-        statements: 50,
+        // Zmierzony floor (2026-05-31, ~70% lines) — blokuje regresję poniżej obecnego pokrycia.
+        // Cel długoterminowy: shared/ ≥ 80%, całość ≥ 70%.
+        lines: 66,
+        functions: 67,
+        branches: 55,
+        statements: 63,
       },
     },
   },

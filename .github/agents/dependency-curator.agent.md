@@ -15,7 +15,7 @@ Per [`core.instructions.md`](../instructions/core.instructions.md), odmów deleg
 ## Default loop
 
 1. Załaduj plan + relevant rules:
-   - [`security.instructions.md`](../instructions/security.instructions.md) — supply chain, gitleaks, dependency audit
+   - [`security.instructions.md`](../instructions/security.instructions.md) — supply chain, secret scanning, dependency audit
    - [`principles.instructions.md`](../instructions/principles.instructions.md) — YAGNI, KISS (no dep "just in case")
 2. **Dla nowej dep** (request od `connector-author` / `tool-author`):
    - Sprawdź czy **już istnieje** w `package.json` (z innym scope: utility helper który robi to samo).
@@ -31,7 +31,7 @@ Per [`core.instructions.md`](../instructions/core.instructions.md), odmów deleg
 4. **Audit cykliczny** (cotygodniowy):
    - `npm run audit:prod` (high severity threshold).
    - Sprawdź `npm outdated` — list deps z newer versions, oceń urgency (security patches priority).
-   - Sprawdź gitleaks output — żaden token w lockfile.
+   - Sprawdź, czy żaden token nie trafił do lockfile / diffu (natywny GitHub secret scanning / przegląd).
 5. Hand off do `code-reviewer` (po push ADR + dep change) lub `security-auditor` (jeśli CVE w dep audit).
 
 ## Domain mastery

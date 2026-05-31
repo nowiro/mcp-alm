@@ -141,7 +141,7 @@ PR-sized bullets:
 - [x] `src/extract-sonar.ts` (quality gate + issues + hotspots + measures).
 - [x] Fixture roundtrip test dla Jira: raw API response → `buildExtractedIssue` → `toMatchInlineSnapshot`. Każda zmiana w reshape / assembly extras zostanie wyłapana.
 - [ ] (Opcjonalnie, follow-up) End-to-end test z mockiem `fetch` przechodzącym przez całe `main()` dla pozostałych konektorów. Wymaga refactoru `buildExtractedPage` / per-type processors GitLab / Sonar żeby odseparować pure assembly od HTTP.
-- [ ] (Opcjonalnie, follow-up) GitHub Actions workflow dla scheduled snapshotów. Wymaga decyzji o secret management + retencji artifactów.
+- [ ] (Opcjonalnie, follow-up) Scheduled snapshoty przez dowolny scheduler (cron / Task Scheduler / systemd timer). Wymaga decyzji o secret management + retencji artifactów. (Repo nie używa GitHub Actions.)
 
 ## References
 

@@ -273,40 +273,12 @@ Wszystkie kontrole z głównego serwera obowiązują **identycznie**:
   manualnie**, że JSON-y nie zawierają wrażliwych danych (tickety
   security, custom fieldy z PII, etc.)
 
-## CI / scheduling
+## Scheduling (opcjonalnie)
 
-Workflow GitHub Actions nie jest dorzucony w default — wymaga decyzji
-o tym, gdzie i jak trzymać token w CI (secrets, OIDC, ephemeral runner).
+Pipeline ekstrakcji (`npm run extract:jira`, `extract:confluence`, …) to zwykłe skrypty CLI —
+zautomatyzujesz je **dowolnym** schedulerem (cron, Windows Task Scheduler, systemd timer, runner
+CI Twojego wyboru). Repo celowo **nie** dorzuca żadnego workflowu.
 
-Szkic, gdy chcesz włączyć:
-
-```yaml
-# .github/workflows/extract.yml (do dodania ręcznie)
-name: Extract Jira snapshot
-on:
-  schedule:
-    - cron: '0 6 * * 1' # poniedziałek 06:00 UTC
-  workflow_dispatch:
-jobs:
-  extract:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '22', cache: npm }
-      - run: npm ci
-      - run: npm run build
-      - run: npm run extract:jira
-        env:
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
-          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: jira-snapshot
-          path: output/jira/
-          retention-days: 90
-```
-
-Świadomie pominięte w default workflowie — to wymaga firmowej decyzji
-o lokalizacji secretów i polityce retencji snapshotów.
+Wymagania: tokeny trzymaj w env / secret store (nigdy w repo — patrz `SECURITY.md`); zadbaj o
+politykę retencji snapshotów (`output/` jest gitignored). Lokalizacja secretów + retencja to
+decyzja firmowa, nie kod repo.

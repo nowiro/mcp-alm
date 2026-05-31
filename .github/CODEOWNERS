@@ -10,9 +10,6 @@
 .github/prompts/                    @maintainers @ai-leads
 .github/copilot-instructions.md     @maintainers @ai-leads
 
-# GitHub Actions — CI/CD security-sensitive
-.github/workflows/                  @maintainers
-
 # Auth + obsługa tokenów — najwyższa wrażliwość
 src/shared/auth.ts                  @maintainers @security-leads
 src/shared/http-client.ts           @maintainers @security-leads

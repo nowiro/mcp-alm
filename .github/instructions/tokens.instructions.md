@@ -47,4 +47,4 @@ Testy w [`log.spec.ts`](../../src/shared/log.spec.ts) asercją że komunikaty b�
 - **Rotacja:** użytkownik rotuje upstream token, aktualizuje env / config, restartuje proces MCP. Playbook: [`security-architecture.md`](../../docs/explanation/security-architecture.md#rotacja-tokenów).
 - ❌ Nigdy nie persystuj tokena do dysku w tym repo (brak `.env`, brak cache, brak commited JSON).
 - ✅ User trzyma w OS keychain / password manager → export do env / wkleja w `~/.config/mcp-alm/config.json` (`chmod 600` na POSIX).
-- ✅ CI: GitHub Actions repo secrets → env w starcie joba.
+- ✅ Automatyzacja (jeśli kiedyś): token w secret store schedulera / CI → env w starcie procesu; nigdy w tracked file. (To repo nie używa GitHub Actions.)

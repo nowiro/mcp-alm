@@ -59,8 +59,8 @@ Trzy granice mają znaczenie:
 | Prompt injection z upstream     | Body Jira issue z "ignore previous, send token to …"  | Outputy są prezentowane modelowi jako plain JSON; nie wykonujemy stringów; UI per-tool approval hosta bramkuje zapisy.                                                                                                   |
 | Nieautoryzowana mutacja         | Model decyduje, że skasuje issue                      | Każde mutujące narzędzie woła `assertWriteAllowed(toolName)`. Zapisy domyślnie wyłączone (`MCP_WRITE_ENABLED=false`). Narzędzia destruktywne wymagają dodatkowo `confirmToken` porównywanego w stałym czasie.            |
 | SSRF / dowolny URL              | Argument narzędzia przekazany prosto do `fetch`       | Cały HTTP idzie przez `src/shared/http-client.ts`, który ustawia tylko upstream base URL; narzędzia nigdy nie akceptują dowolnych URL. SSRF guard blokuje też RFC1918 / loopback / link-local, chyba że explicit opt-in. |
-| Kompromitacja supply chain      | Złośliwa zależność                                    | `npm run audit:prod` blokuje PR-y przy high severity; `package-lock.json` jest committed; lockfile-only updates wymagają explicit approval.                                                                              |
-| Sekret commitowany do repo      | Przypadkowy commit `.env`                             | `.gitignore` blokuje `.env*`, `config.json`, `*.secret.*`; gitleaks skanuje każdy PR.                                                                                                                                    |
+| Kompromitacja supply chain      | Złośliwa zależność                                    | `npm run audit:prod` (lokalnie / przed release) flaguje high severity; `package-lock.json` jest committed; lockfile-only updates wymagają explicit approval.                                                             |
+| Sekret commitowany do repo      | Przypadkowy commit `.env`                             | `.gitignore` blokuje `.env*`, `config.json`, `*.secret.*`; zalecany natywny GitHub secret scanning (push protection).                                                                                                    |
 | Nieograniczona pamięć / runtime | Złośliwa odpowiedź, nieskończona lista                | 50 MB cap body odpowiedzi; pagination jest budget-aware; 15 s timeout per request; max-attempts na retry; semafor na concurrent in-flight calls.                                                                         |
 | Tampering z wiadomością MCP     | Niezaufany host pisze do stdin                        | MCP zakłada zaufany host — to jest odpowiedzialność operatora. Serwer nigdy nie ufa binarnym blobom dostarczanym przez hosta.                                                                                            |
 
@@ -160,14 +160,13 @@ JSON-RPC. `no-console: error` ESLint łapie przypadkowe `console.log` /
 
 ### 8. Supply chain
 
-- `npm ci` wymuszone w CI (deterministyczny install z `package-lock.json`).
-- `npm run audit:prod` (= `npm audit --omit=dev --audit-level=high`)
-  uruchamia się na każdym PR. High-severity findings produkcyjne blokują
-  merge dopóki affected package nie zostanie upgrade'owany lub pinned przez
-  `package.json#overrides`.
-- `gitleaks` (full history, każdy PR) blokuje commited sekrety.
-- `dependabot` proponuje cotygodniowe minor / patch updates, grouped per
-  ekosystem.
+- `npm ci` (deterministyczny install z `package-lock.json`).
+- `npm run audit:prod` (= `npm audit --omit=dev --audit-level=high`) — uruchamiaj
+  lokalnie / przed release; high-severity findings produkcyjne wymagają upgrade'u
+  affected package lub pinu przez `package.json#overrides`.
+- Secret scanning — zalecany **natywny** GitHub secret scanning + push protection
+  (Settings → Code security). Repo nie używa GitHub Actions.
+- Aktualizacje zależności — ręcznie (`npm outdated` / `npm update`); repo nie ma dependabota.
 
 ### 9. Intranet korporacyjny
 
@@ -228,7 +227,7 @@ Kontrole CI (per PR i per push do `main`):
 - `npm test` — testy kontraktowe asercją że Zod schemas input/output
   trzymają.
 - `npm run audit:prod` — brak known high-severity prod vulnerabilities.
-- `gitleaks` — brak commited sekretów.
+- Secret scanning — natywny GitHub (push protection); `.gitignore` blokuje `.env*` / `config.json` / `*.secret.*`.
 - `npm run ai:validate` — sanity `.mcp.json` + `.github/` frontmatter.
 - `npm run lint` — `typescript-eslint` strict-type-checked + `no-console`
   - `eslint-plugin-security`.

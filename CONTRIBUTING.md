@@ -11,8 +11,8 @@ warto się zapoznać, bo opisują to samo, tylko bardziej formalnie.
   jest `.nvmrc`.
 - Repo jest celowo standalone. Nie ma orchestratora, nie ma backendu, nie
   ma submodułów — wszystko, czego potrzebujesz, jest w tym katalogu.
-- Pakiet jest `"private": true`. Nie publikujemy na npm. Buildy
-  dystrybuujemy przez `npm link` lub bezpośrednio `node dist/server-X.js`.
+- Pakiet jest publikowany na npm jako `@nowiro/mcp-alm` (`npm publish --provenance`,
+  **ręcznie** — repo nie używa GitHub Actions). Lokalnie: `npm link` lub `node dist/server-X.js`.
 
 ## Setup
 

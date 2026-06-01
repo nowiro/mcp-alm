@@ -12,7 +12,7 @@ import { defineConfig } from 'vitest/config';
  */
 export default defineConfig({
   test: {
-    include: ['src/**/*.spec.ts', 'tests/**/*.spec.ts'],
+    include: ['src/**/*.spec.ts', 'tests/**/*.spec.ts', 'tools/**/*.spec.ts'],
     exclude: ['node_modules', 'dist', 'coverage'],
     environment: 'node',
     reporters: process.env['CI'] ? ['default', 'junit'] : ['default'],

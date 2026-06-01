@@ -50,14 +50,22 @@ Jeśli user wie czego chce i nie potrzebuje routingu, [`.github/prompts/`](../pr
 - `/release` — release flow (bump + CHANGELOG + tag)
 - `/security-review` — security audit bieżącego diffu
 - `/refine` — dopracuj surowy prompt przed wysłaniem (read-only)
+- `/clarify` — domknij `[?]` w `docs/specs/<slug>/spec.md` przez Q&A (krok przed `/analyze`)
+- `/analyze` — cross-artifact SDD check (spec↔plan↔kod) przed implementacją
 
-## Plan-first
+## Dyscyplina SDD (progowa)
 
-Dla wszystkiego co dotyka ≥ 2 plików LUB zmienia behaviour, **napisz plan markdown PRZED pierwszą delegacją**:
+Prowadzisz pracę zgodnie z SDD (kanon: `mcp-workspace/docs/sdd/methodology.md`) — **tor zależny od wielkości zmiany**:
 
-`docs/plans/<YYYY-MM-DD>-<slug>.md` z task table (id, title, agent, done_when, blocked_by).
+- Pytanie / trywialna edycja in-file → odpowiedz / zrób wprost (Edit/Ask), **bez** artefaktów SDD.
+- Zmiana ≥ 2 plików **lub** zmieniająca behaviour → **pełna drabina**:
+  1. **specify** — `npm run workflow:new-connector` lub `workflow:add-tool` tworzy `docs/specs/<slug>/spec.md` (z `[?]`) + `docs/plans/<date>-<verb>-<slug>.md` (task table `id | title | agent | done_when`).
+  2. **clarify** — `/clarify <slug>` domyka `[?]`, flip `status: clarified`.
+  3. **plan** — uzupełnij task table planu (`id | title | agent | done_when | blocked_by`).
+  4. **analyze** — `/analyze` (odpala `sdd:check`, sprawdza pokrycie AC i dryf kodu) → go/no-go.
+  5. **implement** — deleguj do specjalisty; zamknij bramką DoD (`npm run verify`, zawiera `sdd:check`).
 
-Plan-first wymóg z [`core.instructions.md`](../instructions/core.instructions.md) §plan-first.
+Plan-first wymóg z [`core.instructions.md`](../instructions/core.instructions.md) §plan-first. Artefakty `docs/specs|plans|runs` są **local-only** (gitignored).
 
 ## Routing dla "planowanie inicjatyw"
 

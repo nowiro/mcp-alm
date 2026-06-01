@@ -39,8 +39,7 @@ const c = {
 
 const RESERVED = ['jira', 'confluence', 'figma', 'sonar', 'gitlab', 'shared'];
 const AUTH_ALLOWED = ['pat', 'basic', 'oauth2'];
-const USAGE =
-  'Usage: npm run workflow:new-connector -- --name=<slug> --base-url=<https://...> --auth=pat|basic|oauth2';
+const USAGE = 'Usage: npm run workflow:new-connector -- --name=<slug> --base-url=<https://...> --auth=pat|basic|oauth2';
 
 for (const key of ['name', 'base-url', 'auth']) {
   if (!ARGS[key]) {
@@ -126,13 +125,13 @@ owner: analyst
 
 # Spec: ${name} connector
 
-## Problem
+## Kontekst
 
-[?] Który agentic workflow to odblokowuje?
+[?] Jaki problem / potrzebę to odblokowuje i dlaczego teraz?
 
-## Persony
+## User story
 
-[?] Cytuj ids z personas (jeśli istnieją).
+[?] Jako <persona> chcę <zdolność>, aby <wynik>.
 
 ## Acceptance criteria
 

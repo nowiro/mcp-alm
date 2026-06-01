@@ -16,7 +16,8 @@ Klient: **GitHub Copilot** w VS Code ≥ 1.121, IntelliJ ≥ 2026.1.2, Eclipse (
 ## Twarde reguły (must)
 
 - ✅ Czytaj kod przed deklarowaniem że znasz; najmniejsza rozsądna zmiana.
-- ✅ DoD przed "done": `npm run verify` (format + lint + typecheck + test + build + ai:validate).
+- ✅ DoD przed "done": `npm run verify` (format + lint + typecheck + test + build + ai:validate + sdd:check).
+- ✅ **SDD progowo**: zmiana ≥ 2 plików lub behaviour → specify → `/clarify` → plan → `/analyze` → implement (kanon: `mcp-workspace/docs/sdd/methodology.md`). Trywialne edycje / pytania → wprost.
 - ❌ Nie zgaduj ścieżek / nazw / wersji.
 - ❌ Nie bypass git hooków (`--no-verify`).
 - ❌ Tokeny **wyłącznie** z env / `~/.config/mcp-alm/config.json` — nigdy w tracked file.
@@ -37,7 +38,7 @@ Pełen kontrakt + naming → [`mcp-server.instructions.md`](instructions/mcp-ser
 
 1. **Ten plik** — repo-wide.
 2. **`.github/instructions/*.instructions.md`** — auto-aplikowane per `applyTo` glob (load: `core`, `principles`, `security`, `tokens`, `mcp-server`, `connectors`, `llm-optimization`, `production-readiness`, `language`).
-3. **`.github/prompts/*.prompt.md`** — wywoływane `/<name>` (`/release`, `/add-tool`, `/new-connector`, `/security-review`).
+3. **`.github/prompts/*.prompt.md`** — wywoływane `/<name>` (`/release`, `/add-tool`, `/new-connector`, `/security-review`, `/refine`, `/clarify`, `/analyze`).
 4. **`.github/agents/*.agent.md`** — picker w VS Code (`orchestrator`, `connector-author`, `epic-strategist`, `confluence-architect`, `token-tuner`, `template-author`, `test-engineer`, `dependency-curator`).
 5. **User prompt** — najwyższy.
 

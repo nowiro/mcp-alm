@@ -352,9 +352,9 @@ return templateResponse(
 
 Każdy template ma `version:` w frontmatter — bump przy breaking shape changes (semver minor = compatible, major = breaking).
 
-## Deterministyczne audyty (validate + token-budget)
+## Deterministyczne audyty (validate + passthrough + token-budget)
 
-Dwa skrypty static-only które pilnują kontraktu narzędzi przed mergem:
+Trzy skrypty static-only które pilnują kontraktu narzędzi i budżetu tokenów przed mergem:
 
 ```sh
 npm run validate:inputs
@@ -362,6 +362,12 @@ npm run validate:inputs
 #   name z prefixem servera, description literal, inputSchema (named ref), handle method.
 #   Wpięte w npm run verify — drift kontraktu blokuje commit.
 #   Obecny stan: 71/71 tools clean.
+
+npm run validate:passthrough
+# → gate: każdy read-passthrough musi być capowany (text), reshapowany (json)
+#   albo oznaczony `// passthrough-ok` (bounded); write-toole wyłączone. W npm run verify.
+#   Zamyka martwy punkt token:budget — tool bez Zod-limitu jest dla niego niewidzialny.
+#   `-- --report` → docs/runs/<date>-passthrough-audit.md (pełny inwentarz passthrough).
 
 npm run token:budget
 # → scan Zod limits (.min/.max/.default) w server/extract files,

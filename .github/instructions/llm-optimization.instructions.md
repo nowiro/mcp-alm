@@ -81,6 +81,20 @@ Powtarzalne well-defined operacje (review, scaffold, audyt linków, regen API do
 
 **Reguła ekstrakcji:** drugi raz w tygodniu ten sam prompt-template → wyciągnij deterministyczne kroki do skryptu. Skrypt może wywołać LLM dla pod-problemu, ale orchestrate'uje deterministycznie.
 
+### 11. Żaden raw read passthrough bez capa / reshape / adnotacji
+
+Każdy `return http.request(...)` z **read** toola MUSI być albo capowany (text), albo reshapowany (json), albo świadomie oznaczony — nigdy surowy nieograniczony payload prosto z API. To martwy punkt audytu `token:budget` (skanuje tylko Zod `.max/.default` — tool bez capa nie ma czego zeskanować).
+
+- **Text** (pliki, logi, diffy) → `headBytes()` (head-first) / `tailBytes()` (tail-first) / `truncate()` (proza). Zwróć `{ content, totalBytes, returnedBytes, truncated }`.
+- **Tree** (Figma document) → `pruneNodeTree(children, maxNodes)` → przycięte drzewo + `_truncated` + `_nodeCount`.
+- **JSON read** — rosnąca lista (`*.list_*`) → reshape do canonical + `limit` (jak `list_issues` / `list_versions`); bounded single-entity (`quality_gate`, `list_transitions`) → `// passthrough-ok: <reason>`.
+
+Gate `npm run validate:passthrough` (wpięte w `verify`) blokuje **każdy un-annotated read passthrough** — text bez cap-helpera ORAZ json-read bez reshape. Write-toole (POST/PUT/DELETE) zwracające echo encji są wyłączone. Klasa tree pilnowana testami `pruneNodeTree` (brak taniego statycznego sygnału na „unbounded JSON tree"). Pełna inwentaryzacja: `npm run validate:passthrough -- --report`.
+
+✅ `const raw = await http.request(...); return { items: raw.values.map(reshape), count };`
+✅ `// passthrough-ok: bounded single entity` nad `return http.request(...)`
+❌ `return http.request({ path: '/api/projects/search' });` // raw lista bez reshape
+
 ## Domyślne budżety per klasa zadania
 
 | Klasa                          | Budżet (tokens) | Uzasadnienie                              |
@@ -102,10 +116,13 @@ Override per tool przez `budget?: number` w args.
 - ❌ Hard-cap "fetch 1000 latest" bez `truncated` flagi
 - ❌ Gołe `console.log(huge_object)` (logi + potencjalnie LLM)
 - ❌ Pełny ADF w prompt (JSON ~3× tokens vs Markdown)
+- ❌ `return http.request<string>(...)` bez `headBytes`/`tailBytes` (surowy plik/log prosto do kontekstu)
+- ❌ Zwrot całego Figma document bez `pruneNodeTree` (5+ MB drzewo)
+- ❌ `return http.request(...)` z rosnącą listą bez reshape/`limit` (np. raw `project/search`)
 
 ## Implementacja referencyjna
 
-`src/shared/`: `budget.ts` (BudgetTracker, estimateTokens, truncate) · `extract.ts` (paginate → reshape → charge → stop) · `pagination.ts` (offset / cursor adapters) · `adf.ts` (ADF → Markdown) · `field-registry.ts` (custom-field reshape) · `llm-optimize.ts` (compactJson + summarizeArray + LRU).
+`src/shared/`: `budget.ts` (BudgetTracker, estimateTokens, truncate) · `extract.ts` (paginate → reshape → charge → stop) · `pagination.ts` (offset / cursor adapters) · `adf.ts` (ADF → Markdown) · `field-registry.ts` (custom-field reshape) · `llm-optimize.ts` (compactJson + summarizeArray + LRU) · `byte-cap.ts` (headBytes — head-cap plików) · `figma-node-tree.ts` (countNodes + pruneNodeTree — cap drzewa Figmy).
 
 ## Zobacz też
 

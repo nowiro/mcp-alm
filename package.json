@@ -72,11 +72,12 @@
     "template:render": "node tools/scripts/render-template.mjs",
     "template:list": "node tools/scripts/render-template.mjs --list",
     "validate:inputs": "node tools/scripts/validate-inputs.mjs",
+    "validate:passthrough": "node tools/scripts/validate-passthrough.mjs",
     "token:budget": "node tools/scripts/token-budget.mjs",
     "workflow:add-tool": "node tools/scripts/workflow-add-tool.mjs",
     "workflow:new-connector": "node tools/scripts/workflow-new-connector.mjs",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run ai:validate && npm run validate:inputs"
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run ai:validate && npm run validate:inputs && npm run validate:passthrough"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",

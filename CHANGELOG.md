@@ -28,7 +28,8 @@ Pięć serwerów MCP (stdio) dla narzędzi ALM, **read-first, write-guarded**. K
 
 ### Tooling i dystrybucja
 
-- `npm run verify` = format · lint · typecheck · test · build · ai:validate · validate:inputs. Plus `doctor`, `bootstrap`, scaffoldery `workflow:*`, `token:budget`.
+- `npm run verify` = format · lint · typecheck · test · build · ai:validate · validate:inputs · validate:passthrough. Plus `doctor`, `bootstrap`, scaffoldery `workflow:*`, `token:budget`.
+- `validate:passthrough` (gate w `verify`): każdy read-passthrough musi być capowany (text), reshapowany (json) albo oznaczony `// passthrough-ok` (bounded); write-toole wyłączone — zamyka martwy punkt `token:budget`. `-- --report` daje pełny inwentarz. Cap-helpery: `byte-cap.ts` (`headBytes`, pliki), `gitlab-job-log.ts` (`tailBytes`, logi), `figma-node-tree.ts` (`pruneNodeTree`, drzewo Figmy). Listy reshapowane: `sonar.list_projects` (`reshapeSonarProject`), `jira.list_projects`, `confluence.list_spaces`, `figma.list_team_projects` / `list_project_files`.
 - `validate:inputs` waliduje kontrakt każdego toola **oraz** ma count-guard: udokumentowana liczba narzędzi (README `N/N tools clean`, CHANGELOG `~N narzędzi`) musi == registry, inaczej `verify` czerwone.
 - Testy: jednostkowe (reshape / adapter / shared) + **integration harness** (`tests/`) — testuje wiring handlerów serwera end-to-end (input → URL/query → reshape → output) ze stubowanym `fetch`, bez bootu (`MCP_NO_BOOT`).
 - Husky: pre-commit (lint-staged) + commit-msg (commitlint). **Brak GitHub Actions** — publish ręczny (`npm publish --provenance`), verify lokalnie.

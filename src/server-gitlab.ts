@@ -10,6 +10,7 @@ import { z } from 'zod';
 
 import { loadGitLabAuth } from './shared/auth.js';
 import { BudgetTracker } from './shared/budget.js';
+import { headBytes } from './shared/byte-cap.js';
 import { SecurityError } from './shared/errors.js';
 import { extract } from './shared/extract.js';
 import { tailBytes } from './shared/gitlab-job-log.js';
@@ -17,6 +18,7 @@ import {
   reshapeGitLabIssue,
   reshapeGitLabMr,
   reshapeGitLabPipeline,
+  trimBody,
   type CanonicalGitLabIssue,
   type CanonicalMr,
   type CanonicalPipeline,
@@ -62,6 +64,7 @@ const GetFileInput = z.object({
   projectId: ProjectId,
   path: z.string().min(1),
   ref: z.string().min(1),
+  maxBytes: z.number().int().min(500).max(1_000_000).default(65_536),
 });
 const GetPipelineJobsInput = z.object({
   projectId: ProjectId,
@@ -223,11 +226,12 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'gitlab.get_file_content',
-    description: 'Fetch a file from a repo at a given ref (raw text).',
+    description:
+      'Fetch a file from a repo at a given ref. Returns the first `maxBytes` bytes (default 64 KB) of raw text plus the total byte count so callers can spot truncation without re-downloading.',
     inputSchema: GetFileInput,
-    async handle({ projectId, path, ref }, ctx) {
+    async handle({ projectId, path, ref, maxBytes }, ctx) {
       assertSafePath(path);
-      return http.request<string>({
+      const raw = await http.request<string>({
         path: `/projects/${encodeProject(projectId)}/repository/files/${encodeURIComponent(path)}/raw`,
         query: { ref },
         responseMode: 'text',
@@ -235,6 +239,16 @@ const tools: ToolDefinition[] = [
         correlationId: ctx.correlationId,
         tool: ctx.tool,
       });
+      const capped = headBytes(raw, maxBytes);
+      return {
+        projectId,
+        path,
+        ref,
+        content: capped.content,
+        totalBytes: capped.totalBytes,
+        returnedBytes: capped.returnedBytes,
+        truncated: capped.truncated,
+      };
     },
   }),
   defineTool({
@@ -605,6 +619,7 @@ function normaliseCommit(raw: RawCommit): {
   shortSha: string;
   title: string;
   messageMd?: string;
+  messageTruncated?: boolean;
   author?: { name: string; email: string };
   authoredAt?: string;
   committedAt?: string;
@@ -613,11 +628,13 @@ function normaliseCommit(raw: RawCommit): {
 } {
   const author =
     raw.author_name || raw.author_email ? { name: raw.author_name ?? '', email: raw.author_email ?? '' } : undefined;
+  const message = trimBody(raw.message ?? undefined);
   return {
     sha: raw.id ?? '',
     shortSha: raw.short_id ?? '',
     title: raw.title ?? '',
-    ...(raw.message ? { messageMd: raw.message } : {}),
+    ...(message.text ? { messageMd: message.text } : {}),
+    ...(message.truncated ? { messageTruncated: true } : {}),
     ...(author ? { author } : {}),
     ...(raw.authored_date ? { authoredAt: raw.authored_date } : {}),
     ...(raw.committed_date ? { committedAt: raw.committed_date } : {}),

@@ -5,6 +5,7 @@
 import { z } from 'zod';
 
 import { loadFigmaAuth } from './shared/auth.js';
+import { pruneNodeTree } from './shared/figma-node-tree.js';
 import { emitCss, emitScss, emitTs, type Token, type TokenKind } from './shared/figma-tokens.js';
 import { createNamedHttpClient } from './shared/http-client.js';
 import { bootMcpServerIfEnabled, defineTool, usageHistoryTool, type ToolDefinition } from './shared/mcp-server.js';
@@ -21,7 +22,11 @@ const GetFileInput = z.object({
   /** Hard cap on the rendered document tree to avoid 5+ MB blobs in context. */
   maxNodes: z.number().int().min(10).max(50_000).default(2000),
 });
-const GetFileNodesInput = z.object({ fileKey: FileKey, ids: z.array(z.string().min(1)).min(1).max(100) });
+const GetFileNodesInput = z.object({
+  fileKey: FileKey,
+  ids: z.array(z.string().min(1)).min(1).max(100),
+  maxNodes: z.number().int().min(10).max(50_000).default(2000),
+});
 const GetImageUrlsInput = z.object({
   fileKey: FileKey,
   ids: z.array(z.string().min(1)).min(1).max(100),
@@ -43,7 +48,7 @@ const tools: ToolDefinition[] = [
   defineTool({
     name: 'figma.get_file',
     description:
-      'Fetch entire Figma file (expensive O(tree size), can be 5+ MB; soft cap maxNodes=2,000 triggers truncation hint). For surgical reads prefer get_file_nodes with explicit ids.',
+      'Fetch a Figma file (expensive O(tree size), can be 5+ MB). The document tree is pruned depth-first to maxNodes=2,000 with a truncation hint; for surgical reads prefer get_file_nodes with explicit ids.',
     inputSchema: GetFileInput,
     async handle({ fileKey, maxNodes }, ctx) {
       const raw = await http.request<{ document?: { children?: readonly unknown[] } }>({
@@ -51,27 +56,56 @@ const tools: ToolDefinition[] = [
         correlationId: ctx.correlationId,
         tool: ctx.tool,
       });
-      const nodeCount = countNodes(raw.document?.children ?? []);
-      if (nodeCount > maxNodes) {
-        return {
-          ...raw,
-          _warning: `document has ${nodeCount} nodes (> maxNodes=${maxNodes}). Prefer figma.get_file_nodes for surgical reads.`,
-        };
-      }
-      return raw;
+      const pruned = pruneNodeTree(raw.document?.children ?? [], maxNodes);
+      if (!pruned.truncated) return raw;
+      return {
+        ...raw,
+        document: { ...raw.document, children: pruned.children },
+        _truncated: true,
+        _nodeCount: pruned.totalNodes,
+        _maxNodes: maxNodes,
+        _hint: 'Document pruned to maxNodes. Use figma.get_file_nodes with explicit ids for full subtrees.',
+      };
     },
   }),
   defineTool({
     name: 'figma.get_file_nodes',
-    description: 'Fetch specific nodes from a Figma file by id.',
+    description:
+      'Fetch specific nodes from a Figma file by id. Each requested subtree is pruned to maxNodes (default 2,000) so a single deep frame cannot flood the context.',
     inputSchema: GetFileNodesInput,
-    async handle({ fileKey, ids }, ctx) {
-      return http.request({
+    async handle({ fileKey, ids, maxNodes }, ctx) {
+      const raw = await http.request<RawNodesResponse>({
         path: `/v1/files/${fileKey}/nodes`,
         query: { ids: ids.join(',') },
         correlationId: ctx.correlationId,
         tool: ctx.tool,
       });
+      const entries = Object.entries(raw.nodes ?? {});
+      if (entries.length === 0) return raw;
+      const nodes: Record<string, unknown> = {};
+      let truncated = false;
+      for (const [id, entry] of entries) {
+        const children = entry.document?.children;
+        if (!Array.isArray(children) || children.length === 0) {
+          nodes[id] = entry;
+          continue;
+        }
+        const pruned = pruneNodeTree(children, maxNodes);
+        if (!pruned.truncated) {
+          nodes[id] = entry;
+          continue;
+        }
+        truncated = true;
+        nodes[id] = { ...entry, document: { ...entry.document, children: pruned.children, childrenTruncated: true } };
+      }
+      if (!truncated) return raw;
+      return {
+        ...raw,
+        nodes,
+        _truncated: true,
+        _maxNodesPerNode: maxNodes,
+        _hint: 'Some node subtrees pruned to maxNodes.',
+      };
     },
   }),
   defineTool({
@@ -79,6 +113,7 @@ const tools: ToolDefinition[] = [
     description: 'Get rendered image URLs for nodes.',
     inputSchema: GetImageUrlsInput,
     async handle({ fileKey, ids, format, scale }, ctx) {
+      // passthrough-ok: image URL map bounded by ids (≤100)
       return http.request({
         path: `/v1/images/${fileKey}`,
         query: { ids: ids.join(','), format, scale },
@@ -102,22 +137,38 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'figma.list_team_projects',
-    description: 'List projects in a Figma team.',
+    description: 'List projects in a Figma team. Returns canonical { id, name } per project.',
     inputSchema: ListTeamProjectsInput,
     async handle({ teamId }, ctx) {
-      return http.request({ path: `/v1/teams/${teamId}/projects`, correlationId: ctx.correlationId, tool: ctx.tool });
+      const raw = await http.request<{ name?: string; projects?: readonly { id?: string | number; name?: string }[] }>({
+        path: `/v1/teams/${teamId}/projects`,
+        correlationId: ctx.correlationId,
+        tool: ctx.tool,
+      });
+      const projects = (raw.projects ?? []).map((p) => ({ id: String(p.id ?? ''), name: p.name ?? '' }));
+      return { ...(raw.name ? { teamName: raw.name } : {}), projects, count: projects.length };
     },
   }),
   defineTool({
     name: 'figma.list_project_files',
-    description: 'List files in a Figma project.',
+    description:
+      'List files in a Figma project. Returns canonical { key, name, lastModified } (thumbnail URLs dropped).',
     inputSchema: ListProjectFilesInput,
     async handle({ projectId }, ctx) {
-      return http.request({
+      const raw = await http.request<{
+        name?: string;
+        files?: readonly { key?: string; name?: string; last_modified?: string }[];
+      }>({
         path: `/v1/projects/${projectId}/files`,
         correlationId: ctx.correlationId,
         tool: ctx.tool,
       });
+      const files = (raw.files ?? []).map((f) => ({
+        key: f.key ?? '',
+        ...(f.name ? { name: f.name } : {}),
+        ...(f.last_modified ? { lastModified: f.last_modified } : {}),
+      }));
+      return { ...(raw.name ? { projectName: raw.name } : {}), files, count: files.length };
     },
   }),
   defineTool({
@@ -285,18 +336,12 @@ await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts, resources });
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
-interface FigmaNode {
-  readonly children?: readonly FigmaNode[];
+interface RawNodeEntry {
+  readonly document?: { readonly children?: readonly unknown[] };
 }
 
-function countNodes(children: readonly unknown[], depth = 0): number {
-  if (depth > 50) return 0; // pathological guard
-  let total = children.length;
-  for (const child of children) {
-    const node = child as FigmaNode;
-    if (node.children) total += countNodes(node.children, depth + 1);
-  }
-  return total;
+interface RawNodesResponse {
+  readonly nodes?: Record<string, RawNodeEntry>;
 }
 
 interface RawFigmaComment {

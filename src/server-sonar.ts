@@ -26,6 +26,7 @@ import { diffGateStatuses, type SonarProjectStatus } from './shared/sonar-gate-d
 import {
   reshapeHotspot,
   reshapeSonarIssue,
+  reshapeSonarProject,
   type CanonicalHotspot,
   type CanonicalSonarIssue,
 } from './shared/sonar-reshape.js';
@@ -111,6 +112,7 @@ const tools: ToolDefinition[] = [
     description: 'Fetch the project quality-gate status.',
     inputSchema: QualityGateInput,
     async handle({ projectKey }, ctx) {
+      // passthrough-ok: single project quality gate, bounded by condition count
       return http.request({
         path: '/api/qualitygates/project_status',
         query: { projectKey },
@@ -182,6 +184,7 @@ const tools: ToolDefinition[] = [
     description: 'Fetch one hotspot by key (raw upstream — includes context lines + rule description).',
     inputSchema: z.object({ hotspotKey: z.string().min(1) }),
     async handle({ hotspotKey }, ctx) {
+      // passthrough-ok: single hotspot detail (context lines + rule), intentionally raw
       return http.request({
         path: '/api/hotspots/show',
         query: { hotspot: hotspotKey },
@@ -211,6 +214,7 @@ const tools: ToolDefinition[] = [
       'Fetch metric values for a project (single API call, O(1)). Optionally scoped to branch or pull request.',
     inputSchema: MeasuresInput,
     async handle({ projectKey, metrics, branch, pullRequest }, ctx) {
+      // passthrough-ok: O(1) metric values bounded by metrics[]
       return http.request({
         path: '/api/measures/component',
         query: {
@@ -226,15 +230,18 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'sonar.list_projects',
-    description: 'List Sonar projects the user can browse.',
+    description:
+      'List Sonar projects the user can browse. Returns canonical shapes (key, name, qualifier, visibility, lastAnalysisDate).',
     inputSchema: ListProjectsInput,
     async handle({ limit }, ctx) {
-      return http.request({
+      const raw = await http.request<{ components?: readonly Parameters<typeof reshapeSonarProject>[0][] }>({
         path: '/api/projects/search',
         query: { ps: limit },
         correlationId: ctx.correlationId,
         tool: ctx.tool,
       });
+      const projects = (raw.components ?? []).map((p) => reshapeSonarProject(p));
+      return { projects, count: projects.length };
     },
   }),
   defineTool({

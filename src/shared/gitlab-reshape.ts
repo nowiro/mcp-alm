@@ -76,7 +76,7 @@ interface RawMr {
  * ```
  */
 export function reshapeGitLabMr(raw: RawMr): CanonicalMr {
-  const description = trim(raw.description ?? undefined);
+  const description = trimBody(raw.description ?? undefined);
   const labels = (raw.labels ?? []).filter((s) => s.length > 0);
   const reviewers = (raw.reviewers ?? []).map((u) => u.username ?? '').filter(Boolean);
   const assignees = (raw.assignees ?? []).map((u) => u.username ?? '').filter(Boolean);
@@ -165,7 +165,7 @@ interface RawGitLabIssue {
  * @returns Canonical kształt z gwarantowanym `iid` / `title` / `state`.
  */
 export function reshapeGitLabIssue(raw: RawGitLabIssue): CanonicalGitLabIssue {
-  const description = trim(raw.description ?? undefined);
+  const description = trimBody(raw.description ?? undefined);
   const labels = (raw.labels ?? []).filter((s) => s.length > 0);
   const assignees = (raw.assignees ?? []).map((u) => u.username ?? '').filter(Boolean);
 
@@ -229,7 +229,7 @@ export function reshapeGitLabPipeline(raw: RawPipeline): CanonicalPipeline {
   };
 }
 
-function trim(raw: string | undefined): { text?: string; truncated: boolean } {
+export function trimBody(raw: string | undefined): { text?: string; truncated: boolean } {
   if (raw === undefined || raw === '') return { truncated: false };
   if (raw.length <= MAX_BODY_CHARS) return { text: raw, truncated: false };
   return { text: raw.slice(0, MAX_BODY_CHARS) + '\n…[truncated]', truncated: true };

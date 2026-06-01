@@ -119,3 +119,36 @@ export function reshapeHotspot(raw: RawHotspot): CanonicalHotspot {
     ...(raw.updateDate ? { updateDate: raw.updateDate } : {}),
   };
 }
+
+export interface CanonicalSonarProject {
+  readonly key: string;
+  readonly name: string;
+  readonly qualifier?: string;
+  readonly visibility?: string;
+  readonly lastAnalysisDate?: string;
+}
+
+interface RawSonarProject {
+  readonly key?: string;
+  readonly name?: string;
+  readonly qualifier?: string;
+  readonly visibility?: string;
+  readonly lastAnalysisDate?: string;
+}
+
+/**
+ * Reshape a raw Sonar project (z `/api/projects/search` → `components[]`) do
+ * token-friendly canonical formy. Surowy component niesie też `revision`,
+ * `managed`, `tags`, `_links` — szum dla agenta listującego projekty.
+ * @param raw Surowy component z Sonar API.
+ * @returns Canonical kształt z gwarantowanym `key` / `name`.
+ */
+export function reshapeSonarProject(raw: RawSonarProject): CanonicalSonarProject {
+  return {
+    key: raw.key ?? '',
+    name: raw.name ?? '',
+    ...(raw.qualifier ? { qualifier: raw.qualifier } : {}),
+    ...(raw.visibility ? { visibility: raw.visibility } : {}),
+    ...(raw.lastAnalysisDate ? { lastAnalysisDate: raw.lastAnalysisDate } : {}),
+  };
+}

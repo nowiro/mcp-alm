@@ -71,7 +71,7 @@ const SearchInput = z.object({
   budgetTokens: z.number().int().min(500).max(80_000).default(DEFAULT_BUDGET_TOKENS),
   fields: z.array(z.string().min(1)).optional(),
 });
-const ListProjectsInput = z.object({});
+const ListProjectsInput = z.object({ limit: z.number().int().min(1).max(100).default(50) });
 const ListTransitionsInput = z.object({ key: IssueKey });
 const GetCommentsInput = z.object({
   key: IssueKey,
@@ -316,14 +316,32 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'jira.list_projects',
-    description: 'List Jira projects the user can browse.',
+    description: 'List Jira projects the user can browse. Returns canonical { id, key, name, projectTypeKey?, lead? }.',
     inputSchema: ListProjectsInput,
-    async handle(_input, ctx) {
-      return http.request({
+    async handle({ limit }, ctx) {
+      const raw = await http.request<{
+        isLast?: boolean;
+        values?: readonly {
+          id?: string;
+          key?: string;
+          name?: string;
+          projectTypeKey?: string;
+          lead?: { displayName?: string };
+        }[];
+      }>({
         path: '/rest/api/3/project/search',
+        query: { maxResults: limit },
         correlationId: ctx.correlationId,
         tool: ctx.tool,
       });
+      const projects = (raw.values ?? []).map((p) => ({
+        id: p.id ?? '',
+        ...(p.key ? { key: p.key } : {}),
+        ...(p.name ? { name: p.name } : {}),
+        ...(p.projectTypeKey ? { projectTypeKey: p.projectTypeKey } : {}),
+        ...(p.lead?.displayName ? { lead: p.lead.displayName } : {}),
+      }));
+      return { projects, isLast: raw.isLast ?? true };
     },
   }),
   defineTool({
@@ -497,6 +515,7 @@ const tools: ToolDefinition[] = [
       'List available workflow transitions for an issue. Needed before calling jira.transition_issue (each has an id and target status).',
     inputSchema: ListTransitionsInput,
     async handle({ key }, ctx) {
+      // passthrough-ok: bounded workflow transitions for one issue
       return http.request({
         path: `/rest/api/3/issue/${key}/transitions`,
         correlationId: ctx.correlationId,

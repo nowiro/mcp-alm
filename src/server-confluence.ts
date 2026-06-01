@@ -192,15 +192,26 @@ const tools: ToolDefinition[] = [
   }),
   defineTool({
     name: 'confluence.list_spaces',
-    description: 'List spaces the user can browse.',
+    description: 'List spaces the user can browse. Returns canonical { id, key, name, type, status }.',
     inputSchema: ListSpacesInput,
     async handle({ limit }, ctx) {
-      return http.request({
+      const raw = await http.request<{ results?: readonly RawSpace[] }>({
         path: '/wiki/api/v2/spaces',
         query: { limit },
         correlationId: ctx.correlationId,
         tool: ctx.tool,
       });
+      return {
+        spaces: (raw.results ?? [])
+          .map((s) => ({
+            id: s.id ?? '',
+            ...(s.key ? { key: s.key } : {}),
+            ...(s.name ? { name: s.name } : {}),
+            ...(s.type ? { type: s.type } : {}),
+            ...(s.status ? { status: s.status } : {}),
+          }))
+          .filter((s) => s.id.length > 0),
+      };
     },
   }),
   defineTool({
@@ -476,6 +487,14 @@ export { tools, prompts, resources };
 await bootMcpServerIfEnabled({ name: SERVER_NAME, tools, prompts, resources });
 
 // ── helpers ────────────────────────────────────────────────────────────────
+
+interface RawSpace {
+  readonly id?: string;
+  readonly key?: string;
+  readonly name?: string;
+  readonly type?: string;
+  readonly status?: string;
+}
 
 interface RawComment {
   readonly id?: string;

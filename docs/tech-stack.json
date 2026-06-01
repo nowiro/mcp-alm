@@ -1,0 +1,17 @@
+{
+  "primary": "package.json",
+  "surface": [
+    { "name": "MCP SDK", "key": "@modelcontextprotocol/sdk" },
+    { "name": "zod", "key": "zod" },
+    { "name": "TypeScript", "key": "typescript" },
+    { "name": "Vitest", "key": "vitest" }
+  ],
+  "ide": { "vscode": ">=1.121", "intellij": ">=2026.1.2" },
+  "os": ["Windows", "macOS", "Linux"],
+  "lint": "`eslint . --max-warnings=0` (typescript-eslint strictTypeChecked + security + import-x + promise) + Prettier",
+  "targets": ["docs/tech-stack.md", ".github/copilot-instructions.md"],
+  "notes": [
+    "Wersje pochodzą z package.json / .nvmrc — edytuj je tam, potem `npm run stack:sync`.",
+    "Pięć serwerów MCP (jira/confluence/figma/sonar/gitlab) dzieli ten sam stack; twin-parity z `nowiro/mcp-devtools`."
+  ]
+}

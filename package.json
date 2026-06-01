@@ -74,11 +74,13 @@
     "validate:inputs": "node tools/scripts/validate-inputs.mjs",
     "validate:passthrough": "node tools/scripts/validate-passthrough.mjs",
     "sdd:check": "node tools/scripts/validate-sdd.mjs",
+    "stack:sync": "node tools/scripts/stack.mjs sync",
+    "stack:check": "node tools/scripts/stack.mjs check",
     "token:budget": "node tools/scripts/token-budget.mjs",
     "workflow:add-tool": "node tools/scripts/workflow-add-tool.mjs",
     "workflow:new-connector": "node tools/scripts/workflow-new-connector.mjs",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run ai:validate && npm run validate:inputs && npm run validate:passthrough && npm run sdd:check"
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run ai:validate && npm run validate:inputs && npm run validate:passthrough && npm run sdd:check && npm run stack:check"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",

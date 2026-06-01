@@ -63,7 +63,7 @@ Prowadzisz pracę zgodnie z SDD (kanon: `mcp-workspace/docs/sdd/methodology.md`)
   2. **clarify** — `/clarify <slug>` domyka `[?]`, flip `status: clarified`.
   3. **plan** — uzupełnij task table planu (`id | title | agent | done_when | blocked_by`).
   4. **analyze** — `/analyze` (odpala `sdd:check`, sprawdza pokrycie AC i dryf kodu) → go/no-go.
-  5. **implement** — deleguj do specjalisty; zamknij bramką DoD (`npm run verify`, zawiera `sdd:check`).
+  5. **implement** — specjalista czyta `docs/tech-stack.md` (wersje + reguły-error eslint) i reguły domenowe **przed** pisaniem (kod kompletny od razu); zamknij bramką DoD (`npm run verify` — zawiera `sdd:check` + `stack:check`).
 
 Plan-first wymóg z [`core.instructions.md`](../instructions/core.instructions.md) §plan-first. Artefakty `docs/specs|plans|runs` są **local-only** (gitignored).
 

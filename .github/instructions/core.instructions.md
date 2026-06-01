@@ -30,6 +30,17 @@ refactorów.
 2.4 Żadnych pół-skończonych implementacji. Jeśli krok nie może się
 zakończyć, ujawnij blocker i zatrzymaj się — nie zaklejaj go.
 
+## 2a. Przed generowaniem kodu
+
+Pisz kod **kompletny od razu** — taki, który przechodzi `npm run verify` bez poprawek:
+
+- **Wersje:** bierz z [`docs/tech-stack.md`](../../docs/tech-stack.md) / `package.json`; nigdy nie zgaduj.
+- **ESLint (error z miejsca):** `no-console` (loguj przez `src/shared/log.ts` → stderr),
+  `@typescript-eslint/no-explicit-any`, `no-floating-promises`, `consistent-type-imports`,
+  `restrict-template-expressions`.
+- **Kontrakt domenowy** per `applyTo`: `mcp-server` / `connectors` / `security` (Zod na granicy,
+  write-guard, sandbox / SSRF).
+
 ## 3. Odwracalność i blast radius
 
 3.1 Zawsze bezpieczne: edycja plików w `src/`, `docs/`; uruchamianie testów,

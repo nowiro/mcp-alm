@@ -1,6 +1,6 @@
 ---
 mode: agent
-description: Dodaj narzędzie do istniejącego connectora
+description: Dodaj jedno narzędzie do ISTNIEJĄCEGO connectora mcp-alm (jira/confluence/figma/sonar/gitlab) — generuje snippet defineTool, ≤3 pliki, bez spec. Użyj gdy connector już istnieje; nowy connector → /new-connector.
 ---
 
 # Workflow: Dodaj narzędzie

@@ -29,5 +29,7 @@ Pięć serwerów MCP (stdio) dla narzędzi ALM, **read-first, write-guarded**. K
 ### Tooling i dystrybucja
 
 - `npm run verify` = format · lint · typecheck · test · build · ai:validate · validate:inputs. Plus `doctor`, `bootstrap`, scaffoldery `workflow:*`, `token:budget`.
+- `validate:inputs` waliduje kontrakt każdego toola **oraz** ma count-guard: udokumentowana liczba narzędzi (README `N/N tools clean`, CHANGELOG `~N narzędzi`) musi == registry, inaczej `verify` czerwone.
+- Testy: jednostkowe (reshape / adapter / shared) + **integration harness** (`tests/`) — testuje wiring handlerów serwera end-to-end (input → URL/query → reshape → output) ze stubowanym `fetch`, bez bootu (`MCP_NO_BOOT`).
 - Husky: pre-commit (lint-staged) + commit-msg (commitlint). **Brak GitHub Actions** — publish ręczny (`npm publish --provenance`), verify lokalnie.
 - Decyzje architektoniczne: ADR 0001–0008 (`docs/adr/`).

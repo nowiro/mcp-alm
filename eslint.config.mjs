@@ -37,6 +37,9 @@ export default tseslint.config(
       'coverage/**',
       'tools/**',
       'docs/**',
+      // Integration harness + specs — żyją poza `tsconfig.json#include` (rootDir `./src`),
+      // jak `tools/`; nie zakładamy osobnego tsconfig. Vitest je uruchamia (esbuild).
+      'tests/**',
       '*.js',
       '*.mjs',
       '*.cjs',

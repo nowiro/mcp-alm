@@ -72,6 +72,10 @@ for (const file of serverFiles) {
   }
 }
 
+// Count-guard: documented tool count must equal the registry count, so a tool
+// add/remove can't leave a stale "N/N tools clean" / "~N narzędzi" in the docs.
+checkDocumentedCount(totalTools);
+
 if (JSON_OUT) {
   process.stdout.write(JSON.stringify({ findings, totalTools }, null, 2) + '\n');
 } else {
@@ -121,12 +125,7 @@ function validateBlock(file, serverName, block) {
     return;
   }
   if (!tool.startsWith(`${serverName}.`)) {
-    record(
-      file,
-      tool,
-      'err',
-      `name must start with "${serverName}." (matched server filename) — got "${tool}"`,
-    );
+    record(file, tool, 'err', `name must start with "${serverName}." (matched server filename) — got "${tool}"`);
   }
   if (!/\bdescription\s*:\s*['"`][^'"`]+['"`]/.test(block)) {
     record(file, tool, 'err', 'description: missing or empty literal');
@@ -150,6 +149,32 @@ function validateBlock(file, serverName, block) {
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * Assert every documented tool count equals the registry count. Scans the
+ * `validate:inputs` example marker in README (`N/N tools clean`) and the
+ * CHANGELOG roster (`~N narzędzi`). A finding (err) fails `verify`.
+ */
+function checkDocumentedCount(expected) {
+  const docs = [
+    { file: 'README.md', re: /(\d+)\/\d+\s+tools\s+clean/g },
+    { file: 'CHANGELOG.md', re: /~\s*(\d+)\s+narzędz/g },
+  ];
+  for (const { file, re } of docs) {
+    let txt;
+    try {
+      txt = readFileSync(nodePath.resolve(ROOT, file), 'utf8');
+    } catch {
+      continue; // doc missing — nothing to guard
+    }
+    for (const m of txt.matchAll(re)) {
+      const n = Number(m[1]);
+      if (n !== expected) {
+        record(file, '', 'err', `documented tool count ${n} ≠ registry ${expected} — sync the doc or the registry`);
+      }
+    }
+  }
+}
 
 function parseArgs(argv) {
   const out = {};

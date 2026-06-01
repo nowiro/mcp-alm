@@ -1,6 +1,6 @@
 ---
 mode: agent
-description: Uruchom release flow — bump wersji, regeneracja CHANGELOG, publish
+description: Run the release flow — version bump, CHANGELOG regeneration, publish.
 tools: ['editFiles', 'search', 'runCommands', 'runTasks', 'problems']
 ---
 

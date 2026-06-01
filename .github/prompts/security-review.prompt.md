@@ -1,6 +1,6 @@
 ---
 mode: agent
-description: Defensive security audit konektora — SSRF, write-guard, token leakage, ADF/CQL/JQL injection
+description: Defensive security audit of a single ALM connector — SSRF, write-guard, token leakage, ADF/CQL/JQL injection.
 tools: ['editFiles', 'search', 'runCommands', 'runTasks', 'problems']
 ---
 

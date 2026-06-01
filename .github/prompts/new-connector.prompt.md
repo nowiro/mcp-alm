@@ -1,6 +1,6 @@
 ---
 mode: agent
-description: Workflow dodania nowego konektora ALM
+description: Scaffold a brand-new ALM connector in mcp-alm (server + baseline tools + spec/plan). Use when adding a new upstream; a tool on an existing connector is /add-tool.
 ---
 
 # Workflow: Nowy konektor
